@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Illumia</title>
+    <link rel="stylesheet" href="{% static 'styles/register.css' %}">
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <h1>🌟 ILLUMIA</h1>
+        </div>
+        <h2>Create Account</h2>
+        <p class="subtitle">Join our community</p>
+
+        <form method="POST" action="{% url 'register' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Register</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="{% url 'login' %}">Sign in here</a>
+        </div>
+    </div>
+</body>
+</html>

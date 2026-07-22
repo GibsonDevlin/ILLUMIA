@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ material.title }} — Illumia</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;600;700&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Rajdhani',sans-serif; }
+        body { background:#040609; color:#e0e0e0; min-height:100vh; display:flex; flex-direction:column; }
+        .header { background:rgba(4,6,9,0.95); border-bottom:1px solid rgba(0,240,255,0.15); padding:16px 40px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; flex-shrink:0; }
+        .material-info h2 { font-family:'Orbitron',sans-serif; font-size:14px; color:#00f0ff; letter-spacing:0.5px; margin-bottom:3px; }
+        .material-info p { font-size:12px; color:#566c80; text-transform:uppercase; letter-spacing:1px; }
+        .nav-links { display:flex; gap:12px; }
+        .nav-links a { color:#566c80; font-size:13px; text-decoration:none; border:1px solid rgba(0,240,255,0.2); padding:7px 16px; border-radius:6px; transition:all 0.2s; }
+        .nav-links a:hover { color:#00f0ff; border-color:#00f0ff; }
+        .viewer-container { flex:1; position:relative; overflow:hidden; }
+        .pdf-frame { width:100%; height:calc(100vh - 70px); border:none; display:block; }
+        .watermark-overlay { position:fixed; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:500; display:flex; align-items:center; justify-content:center; }
+        .watermark-text { font-family:'Orbitron',sans-serif; font-size:clamp(14px,2.5vw,28px); color:rgba(0,240,255,0.08); font-weight:900; letter-spacing:4px; text-transform:uppercase; transform:rotate(-30deg); white-space:nowrap; user-select:none; text-shadow:none; }
+        .watermark-grid { position:fixed; top:0; left:0; right:0; bottom:0; pointer-events:none; z-index:499; overflow:hidden; }
+        .watermark-grid-item { position:absolute; font-family:'Orbitron',sans-serif; font-size:13px; color:rgba(0,240,255,0.05); font-weight:700; letter-spacing:2px; text-transform:uppercase; transform:rotate(-30deg); white-space:nowrap; user-select:none; }
+        .no-copy { -webkit-user-select:none; -moz-user-select:none; user-select:none; }
+        .protected-notice { background:rgba(250,204,21,0.06); border:1px solid rgba(250,204,21,0.2); border-radius:8px; padding:10px 16px; font-size:12px; color:#facc15; display:flex; align-items:center; gap:8px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="material-info">
+            <h2>{{ material.title }}</h2>
+            <p>by {{ material.lecturer.username }} · Protected Material</p>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+            <div class="protected-notice">
+                🔒 This material is watermarked with your identity. Sharing is traceable.
+            </div>
+            <div class="nav-links">
+                <a href="{% url 'course_materials' %}">← Back to Materials</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="viewer-container no-copy">
+        <!-- Watermark grid overlay -->
+        <div class="watermark-grid" id="watermark-grid"></div>
+
+        <!-- Center watermark -->
+        <div class="watermark-overlay">
+            <div class="watermark-text">{{ watermark }}</div>
+        </div>
+
+        <!-- PDF Viewer -->
+       <canvas id="pdf-canvas" style="width:100%; display:block; background:#fff;"></canvas>
+        <div style="text-align:center; padding:10px; background:#0a0f18; border-top:1px solid rgba(0,240,255,0.1);">
+            <button onclick="changePdfPage(-1)" style="background:rgba(0,240,255,0.1); border:1px solid rgba(0,240,255,0.3); color:#00f0ff; padding:6px 16px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700; margin-right:8px;">← Prev</button>
+            <span id="pdf-page-info" style="font-size:13px; color:#566c80;"></span>
+            <button onclick="changePdfPage(1)" style="background:rgba(0,240,255,0.1); border:1px solid rgba(0,240,255,0.3); color:#00f0ff; padding:6px 16px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700; margin-left:8px;">Next →</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    // Watermark grid
+    const grid = document.getElementById('watermark-grid');
+    const text = '{{ watermark }}';
+    for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 4; c++) {
+            const el = document.createElement('div');
+            el.className = 'watermark-grid-item';
+            el.textContent = text;
+            el.style.left = `${(c / 4) * 100}%`;
+            el.style.top = `${(r / 6) * 100}%`;
+            grid.appendChild(el);
+        }
+    }
+
+    // Disable right-click and save shortcuts
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if ((e.ctrlKey || e.metaKey) && ['s','p','c','a'].includes(e.key.toLowerCase())) {
+            e.preventDefault();
+        }
+    });
+
+    // PDF.js setup
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    let pdfDoc = null;
+    let currentPageNum = 1;
+    const canvas = document.getElementById('pdf-canvas');
+    const ctx = canvas.getContext('2d');
+
+    async function loadPdf() {
+        try {
+            pdfDoc = await pdfjsLib.getDocument('{{ material.file.url }}').promise;
+            document.getElementById('pdf-page-info').textContent = `Page 1 of ${pdfDoc.numPages}`;
+            renderPage(1);
+        } catch (error) {
+            canvas.style.display = 'none';
+            document.querySelector('.viewer-container').innerHTML += `
+                <p style="text-align:center; color:#ff6b6b; padding:60px 20px; font-size:14px;">
+                    Could not load PDF. Please try again or contact the lecturer.
+                </p>`;
+        }
+    }
+
+    async function renderPage(num) {
+        const page = await pdfDoc.getPage(num);
+        const viewport = page.getViewport({ scale: 1.5 });
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Stamp watermark on canvas after each render
+        ctx.save();
+        ctx.globalAlpha = 0.08;
+        ctx.font = 'bold 36px Orbitron, monospace';
+        ctx.fillStyle = '#00f0ff';
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(-Math.PI / 6);
+        ctx.textAlign = 'center';
+        ctx.fillText('{{ watermark }}', 0, 0);
+        ctx.fillText('{{ watermark }}', -300, -200);
+        ctx.fillText('{{ watermark }}', 300, 200);
+        ctx.restore();
+
+        document.getElementById('pdf-page-info').textContent = `Page ${num} of ${pdfDoc.numPages}`;
+        currentPageNum = num;
+    }
+
+    function changePdfPage(direction) {
+        if (!pdfDoc) return;
+        const newPage = currentPageNum + direction;
+        if (newPage < 1 || newPage > pdfDoc.numPages) return;
+        renderPage(newPage);
+    }
+
+    loadPdf();
+</script>
+</body>
+</html>

@@ -1,0 +1,686 @@
+/* ==========================================================================
+   1. GLOBAL STYLES, PHYSICS & DYNAMIC AMBIENT BACKGROUND
+   ========================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 120px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+:root {
+    /* Cosmic Obsidian Premium Palette Tokens */
+    --glass-bg: rgba(15, 23, 42, 0.45);        
+    --glass-bg-hover: rgba(30, 41, 59, 0.65);   
+    --glass-border: rgba(56, 189, 248, 0.12);  
+    --glass-border-hover: rgba(56, 189, 248, 0.4);
+    --blur-strength: blur(18px);               
+    
+    /* Typography & Interactive Accents */
+    --text-primary: #f8fafc;                   /* Anti-fatigue soft off-white */
+    --text-secondary: #94a3b8;                 
+    --text-muted: #64748b;                     
+    --accent: #38bdf8;                         /* Electric Sky Blue */
+    --accent-hover: #7dd3fc;                   
+    --spring-physics: cubic-bezier(0.34, 1.56, 0.64, 1); /* Kinetic rebound engine */
+}
+
+body {
+  background-color: #030712;                   
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+  position: relative;
+  min-height: 100vh;
+}
+
+/* Custom Fine-Line Interface Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+/* Ambient Deep-Space Light Field Orbs */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(150px);                        
+    opacity: 0.12;                             
+    pointer-events: none;
+}
+
+body::before {
+    background: radial-gradient(circle, var(--accent) 0%, transparent 70%); 
+    top: -10%;
+    left: -15%;
+}
+
+body::after {
+    background: radial-gradient(circle, #c084fc 0%, transparent 70%); /* Orchid Purple */
+    bottom: -10%;
+    right: -10%;
+}
+
+/* ==========================================================================
+   2. IMMERSIVE TOP NAVIGATION HEADER
+   ========================================================================== */
+#head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background: linear-gradient(135deg, rgba(2, 4, 10, 0.75), rgba(15, 23, 42, 0.4));
+    backdrop-filter: var(--blur-strength);
+    -webkit-backdrop-filter: var(--blur-strength);
+    box-shadow: 
+        0 10px 30px -10px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0px 0px rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-radius: 0 0 16px 16px;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+#head-icon {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#head-icon img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid rgba(56, 189, 248, 0.3);
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+#head-icon span {
+  color: white;
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 1px;
+  padding-right: 6px;
+  background: linear-gradient(90deg, #0f172a, var(--accent), #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 400% 400%;
+  text-shadow: 0 2px 10px rgba(56, 189, 248, 0.2);
+  animation: gradientFlow 8s ease infinite;
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+#head2 {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+}
+
+#head-home img {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    transition: transform 0.3s var(--spring-physics);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+#head-home img:hover {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+/* Original Quick Access Functional Controls */
+#quick-access-nav {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.quick-btn {
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: var(--blur-strength);
+    -webkit-backdrop-filter: var(--blur-strength);
+    color: var(--accent);
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.25s var(--spring-physics);
+    white-space: nowrap;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.quick-btn:hover {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: var(--accent);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.15);
+}
+
+.quick-btn:active {
+    transform: translateY(0) scale(0.96);
+}
+
+/* Original Search Layout Encased in Sharp Contrast Rules */
+#head-search {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    max-width: 520px;
+    width: 450px;
+    height: 40px;
+    color: black;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(2, 6, 23, 0.5);
+    border: 2px solid black;
+}
+
+#page3c-search-input, #search {
+    border: none;
+    background: transparent;
+    color: black;
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+    caret-color: #ef4444; /* Pro Red alignment cursor marker */
+    padding: 0 10px;
+    width: 100%;
+    height: 100%;
+}
+
+#search-btn {
+    border: none;
+    border-radius: 5px;
+    background-color: #0f172a;
+    width: 120px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    height: 100%;
+    transition: background-color 0.2s ease;
+}
+
+#search-btn:hover {
+    background-color: #1e293b;
+}
+
+/* ==========================================================================
+   3. HIGH-FIDELITY GLASS INTERFACE SIDEBAR PANELS
+   ========================================================================== */
+#main {
+    display: flex;
+    gap: 32px;
+    padding: 32px;
+    max-width: 1440px;
+    margin: 0 auto;
+}
+
+#ebooks-head {
+    flex: 0 0 270px;
+    height: calc(100vh - 140px);
+    overflow-y: auto;
+    background-color: var(--glass-bg);
+    backdrop-filter: var(--blur-strength);
+    -webkit-backdrop-filter: var(--blur-strength);
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid var(--glass-border);
+    position: sticky;
+    top: 108px;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.category-group h3 {
+    margin-bottom: 12px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.category-group ul {
+    list-style: none;
+}
+
+.category-group a {
+    display: block;
+    padding: 10px 14px;
+    text-decoration: none;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.category-group a:hover,
+.category-group a.active {
+    background-color: var(--glass-bg-hover);
+    color: var(--text-primary);
+    transform: translateX(4px);
+    box-shadow: -3px 0 0 var(--accent);
+    border-radius: 0 8px 8px 0;
+}
+
+/* Grid Layout Architecture Workspace */
+#ebooks-section {
+    flex: 1;
+    padding: 28px;
+    background-color: #0d1420;
+    border-radius: 16px;
+    min-height: 400px;
+}
+
+#ebooks-section h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #e8f6fb;
+    margin-bottom: 24px;
+}
+
+#ratings-panel {
+    display: none;
+    flex-direction: column;
+}
+
+#ratings-panel.active {
+    display: flex !important;
+}       #ebooks-list, .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 28px;
+}
+
+/* ==========================================================================
+   4. GLASS STUDIO PREMIUM SYSTEM BOOK CARDS
+   ========================================================================== */
+.book-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--blur-strength);
+    -webkit-backdrop-filter: var(--blur-strength);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s var(--spring-physics), border-color 0.2s ease, box-shadow 0.25s ease;
+    box-shadow: 
+        0 10px 25px -5px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0px 0px rgba(255, 255, 255, 0.05);
+}
+
+.book-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--glass-border-hover);
+    box-shadow: 
+        0 20px 40px -10px rgba(56, 189, 248, 0.15),
+        0 12px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.book-cover-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    background-color: rgba(2, 4, 10, 0.4);
+    border-bottom: 1px solid var(--glass-border);
+    overflow: hidden;
+}
+
+.book-cover-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    backface-visibility: hidden;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.book-card:hover .book-cover-wrap img {
+    transform: scale(1.06);
+}
+
+.year-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(3, 7, 18, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #facc15;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.book-card-buttons {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    gap: 6px;
+    transform: translateY(4px);
+    opacity: 0;
+    transition: all 0.25s var(--spring-physics);
+}
+
+/* Smooth contextual reveal of tools on hover */
+.book-card:hover .book-card-buttons {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.book-card-buttons button {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(3, 7, 18, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s var(--spring-physics);
+}
+
+.book-card-buttons button:hover {
+    background: var(--accent);
+    color: #030712;
+    transform: scale(1.1);
+}
+
+.book-card-buttons button:active {
+    transform: scale(0.9);
+}
+
+.book-info {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.book-info h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.book-author {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    margin-top: auto;
+}
+
+.download-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #00d4b8, #00b4d8);
+    color: #06281f;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 9px 0;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+    width: 100%;
+}
+
+.download-btn:hover {
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.4);
+    opacity: 0.95;
+}
+
+.download-btn:active {
+    transform: scale(0.97);
+}
+
+/* ==========================================================================
+   5. FROSTED GLASS MODAL DRAWERS (RESTORED ARCHITECTURE)
+   ========================================================================== */
+.quick-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(2, 4, 10, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding-top: 80px;
+    padding-right: 20px;
+    z-index: 2000;
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.quick-modal-content {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.75) 100%);
+    backdrop-filter: var(--blur-strength);
+    -webkit-backdrop-filter: var(--blur-strength);
+    border: 1px solid var(--glass-border-hover);
+    border-radius: 12px;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(56, 189, 248, 0.1);
+    width: 360px;
+    max-height: 520px;
+    display: flex;
+    flex-direction: column;
+}
+
+.quick-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.quick-modal-header h3 {
+    margin: 0;
+    color: var(--accent);
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.quick-modal-close {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s var(--spring-physics);
+}
+
+.quick-modal-close:hover {
+    color: #f43f5e; /* Premium Soft Rose-Red validation close color */
+    transform: rotate(90deg) scale(1.1);
+}
+
+.quick-modal-list {
+    overflow-y: auto;
+    flex: 1;
+    padding: 12px;
+}
+
+/* Custom Dropdown item mapping layout with premium cyan left accent edge */
+.quick-item {
+    padding: 14px;
+    margin-bottom: 8px;
+    background: rgba(56, 189, 248, 0.04);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    border-top: 1px solid rgba(255, 255, 255, 0.02);
+    border-right: 1px solid rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.quick-item:hover {
+    background: rgba(56, 189, 248, 0.12);
+    padding-left: 18px;
+    border-color: rgba(56, 189, 248, 0.25);
+}
+
+.quick-item span {
+    display: block;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    line-height: 1.4;
+    white-space: normal;
+}
+
+.quick-item small {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 11px;
+}
+
+.read-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid rgba(0,180,216,0.5);
+    color: #00b4d8;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s ease;
+}
+
+.read-btn:hover {
+  background: rgba(0, 180, 216, 0.1);
+}
+
+
+.summarize-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid rgba(192,132,252,0.5);
+    color: #c084fc;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s ease;
+}
+
+.summarize-btn:hover {
+    background: rgba(192, 132, 252, 0.1);
+} 
+
+/* ==========================================================================
+   6. RESPONSIVE DESIGN ADJUSTMENTS
+   ========================================================================== */
+@media (max-width: 900px) {
+    #main {
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    #ebooks-head {
+        display: none;
+    }
+
+    #head {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    #head-search {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    #ebooks-list, .books-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+}

@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Become a Lecturer — Illumia</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;600;700&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Rajdhani',sans-serif; }
+        body { background:#040609; color:#e0e0e0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:40px 20px; }
+        .card { background:rgba(10,15,24,0.9); border:1px solid rgba(0,240,255,0.2); border-radius:16px; padding:48px 40px; width:100%; max-width:520px; text-align:center; }
+        .icon { font-size:52px; margin-bottom:20px; }
+        h1 { font-family:'Orbitron',sans-serif; font-size:20px; color:#00f0ff; letter-spacing:2px; margin-bottom:10px; }
+        p { font-size:14px; color:#7d8aa3; line-height:1.7; margin-bottom:10px; }
+        .features { text-align:left; background:rgba(0,240,255,0.03); border:1px solid rgba(0,240,255,0.1); border-radius:10px; padding:20px 24px; margin:24px 0; }
+        .feature { display:flex; align-items:flex-start; gap:10px; margin-bottom:12px; font-size:13px; color:#c8d8e8; }
+        .feature:last-child { margin-bottom:0; }
+        .feature-icon { color:#00f0ff; flex-shrink:0; margin-top:1px; }
+        .warning { background:rgba(250,204,21,0.06); border:1px solid rgba(250,204,21,0.2); border-radius:8px; padding:12px 16px; font-size:13px; color:#facc15; margin-bottom:24px; text-align:left; }
+        .btn-row { display:flex; gap:12px; }
+        .btn { flex:1; padding:12px; border-radius:8px; font-size:13px; font-weight:700; text-transform:uppercase; cursor:pointer; transition:all 0.2s; text-decoration:none; text-align:center; border:none; display:block; }
+        .btn-primary { background:linear-gradient(135deg,#00f0ff,#00b4d8); color:#040609; }
+        .btn-outline { background:transparent; border:1px solid rgba(255,255,255,0.1); color:#566c80; }
+        .btn-outline:hover { border-color:#00f0ff; color:#00f0ff; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon">👨‍🏫</div>
+        <h1>BECOME A LECTURER</h1>
+        <p>Upgrade your account to a Lecturer account to upload and sell course materials directly to students on Illumia.</p>
+
+        <div class="features">
+            <div class="feature"><span class="feature-icon">✅</span> Upload course materials (PDF, DOC, PPT)</div>
+            <div class="feature"><span class="feature-icon">✅</span> Set your own price per material</div>
+            <div class="feature"><span class="feature-icon">✅</span> Review and approve student access requests</div>
+            <div class="feature"><span class="feature-icon">✅</span> Materials are protected with student watermarks</div>
+            <div class="feature"><span class="feature-icon">✅</span> Students view materials in-platform — no downloads</div>
+        </div>
+
+        <div class="warning">
+            ⚠️ Once you switch to a Lecturer account, you will still be able to browse and read books. Your existing library data (favourites, bookmarks) will be preserved.
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="btn-row">
+                <a href="{% url 'course_materials' %}" class="btn btn-outline">Cancel</a>
+                <button type="submit" class="btn btn-primary">Upgrade My Account</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

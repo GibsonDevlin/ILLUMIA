@@ -1,0 +1,332 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - Illumia</title>
+    <style>
+        /* ==========================================================================
+           1. MASTER CORE DESIGN SYSTEM (CYBER OBSIDIAN & NEON)
+           ========================================================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+        :root {
+            --bg-canvas: #040609;                      
+            --glass-bg: rgba(10, 16, 26, 0.65);        
+            --glass-bg-hover: rgba(18, 28, 46, 0.85);   
+            --cyber-cyan: #00f0ff;
+            --cyber-neon-pink: #ff007f;
+            --glass-border: rgba(0, 240, 255, 0.15);  
+            --glass-border-focus: rgba(0, 240, 255, 0.5);
+            --text-primary: #ffffff;                   
+            --text-secondary: #9cb1c4;                 
+            --text-muted: #566c80;                     
+            --blur-strength: blur(20px);               
+            --spring-physics: cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 40px 20px;
+        }
+
+        /* Ambient Premium Backlight Glow Overlays */
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            width: 550px;
+            height: 550px;
+            border-radius: 50%;
+            z-index: 0;
+            filter: blur(140px);                        
+            opacity: 0.08;                             
+            pointer-events: none;
+        }
+        body::before {
+            background: radial-gradient(circle, var(--cyber-cyan) 0%, transparent 70%); 
+            top: -15%;
+            left: -10%;
+        }
+        body::after {
+            background: radial-gradient(circle, var(--cyber-neon-pink) 0%, transparent 70%); 
+            bottom: -15%;
+            right: -10%;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(25px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ==========================================================================
+           2. CENTRALIZED REGISTRATION ARCHITECTURE
+           ========================================================================== */
+        .register-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 240, 255, 0.05);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            position: relative;
+            z-index: 1;
+            animation: slideUp 0.45s var(--spring-physics);
+            transition: border-color 0.3s ease;
+        }
+
+        .register-container:hover {
+            border-color: rgba(0, 240, 255, 0.3);
+        }
+
+        /* Tech micro corner marker accent */
+        .register-container::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            width: 16px;
+            height: 16px;
+            border-top: 2px solid var(--cyber-cyan);
+            border-left: 2px solid var(--cyber-cyan);
+            border-top-left-radius: 8px;
+        }
+
+        /* ==========================================================================
+           3. BRANDING HEADER MATRIX
+           ========================================================================== */
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .logo-img-wrapper {
+            width: 38px;
+            height: 38px;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-img-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .logo h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 24px;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #ffffff, var(--cyber-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 13px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* ==========================================================================
+           4. DJANGO DJANGO {{ form.as_p }} INJECTION INTERCEPTOR STYLES
+           ========================================================================== */
+        /* Intercepting the wrapping `<p>` tags generated dynamically by form.as_p */
+        .register-container form p {
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Targets auto-generated text-muted help blocks inside complex Django validation fields */
+        .register-container form p .helptext {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.3;
+            letter-spacing: 0.3px;
+        }
+
+        /* Targets labels auto-rendered inside form.as_p */
+        .register-container form label {
+            display: block;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        /* Global style injection into backend generated text fields */
+        .register-container form input[type="text"],
+        .register-container form input[type="password"],
+        .register-container form input[type="email"] {
+            width: 100%;
+            height: 44px;
+            padding: 0 16px;
+            background: rgba(4, 6, 9, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            letter-spacing: 0.5px;
+            transition: all 0.25s var(--spring-physics);
+        }
+
+        .register-container form input[type="text"]:focus,
+        .register-container form input[type="password"]:focus,
+        .register-container form input[type="email"]:focus {
+            border-color: var(--glass-border-focus);
+            background: rgba(10, 16, 26, 0.8);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
+        }
+
+        /* Validation Error List Interceptions */
+        .errorlist {
+            list-style: none;
+            background: rgba(255, 0, 127, 0.08);
+            border: 1px solid rgba(255, 0, 127, 0.25);
+            border-radius: 4px;
+            padding: 10px 14px;
+            margin-bottom: 15px;
+        }
+
+        .errorlist li {
+            color: #ff5599;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ==========================================================================
+           5. ACTION ROUTINES & LINK MATRICES
+           ========================================================================== */
+        button[type="submit"] {
+            width: 100%;
+            height: 44px;
+            margin-top: 15px;
+            background: linear-gradient(135deg, rgba(0, 240, 255, 0.05) 0%, rgba(0, 240, 255, 0.15) 100%);
+            border: 1px solid rgba(0, 240, 255, 0.4);
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s var(--spring-physics);
+        }
+
+        button[type="submit"]:hover {
+            background: var(--cyber-cyan);
+            color: #040609;
+            border-color: var(--cyber-cyan);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        button[type="submit"]:active {
+            transform: translateY(0);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 24px;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .login-link a {
+            color: var(--cyber-neon-pink);
+            text-decoration: none;
+            font-weight: 700;
+            margin-left: 4px;
+            transition: text-shadow 0.2s ease;
+        }
+
+        .login-link a:hover {
+            text-shadow: 0 0 8px var(--cyber-neon-pink);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="register-container">
+        <!-- Structural Logo Alignment Block -->
+        <div class="logo">
+            <div class="logo-img-wrapper">
+                <img src="{% static "images/Dio Logo Design, Rage Logo Design, Bike Stickers….jpeg" %}" alt="Illumia Core Engine" />
+            </div>
+            <h1>ILLUMIA</h1>
+        </div>
+        
+        <h2>Create Account</h2>
+        <p class="subtitle">Join our community</p>
+
+        <!-- Native Django Post Allocation Matrix -->
+        <form method="POST" action="{% url 'register' %}">
+            {% csrf_token %}
+            
+            {{ form.as_p }}
+            
+            <button type="submit">Register</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account?<a href="{% url 'login' %}">Sign in here</a>
+        </div>
+    </div>
+</body>
+
+</html>

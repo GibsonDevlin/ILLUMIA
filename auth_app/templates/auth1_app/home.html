@@ -1,0 +1,556 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Illumia</title>
+    <style>
+        /* ==========================================================================
+           1. CORE CYBERPUNK VARIABLES & CANVAS ENGINE
+           ========================================================================== */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&display=swap');
+
+        :root {
+            --bg-canvas: #06080c;                      
+            --glass-bg: rgba(10, 15, 30, 0.65);        
+            --glass-bg-hover: rgba(18, 26, 48, 0.85);   
+            --cyber-cyan: #00f0ff;
+            --cyber-neon-pink: #ff007f;
+            --glass-border: rgba(0, 240, 255, 0.15);  
+            --glass-border-hover: rgba(255, 0, 127, 0.6);
+            --blur-strength: blur(20px);               
+            
+            /* Typography & Layout Accents */
+            --text-primary: #ffffff;                   
+            --text-secondary: #a3b8cc;                 
+            --text-muted: #526b82;                     
+            --spring-physics: cubic-bezier(0.25, 1, 0.5, 1); 
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, rgba(4, 6, 12, 0.95) 0%, rgba(10, 12, 22, 0.9) 100%), 
+                        url("{% static 'images/TM _ TATTOO MUSEUM _ ТАТУ МУЗЕЙ.jpeg' %}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-primary);
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* High-Intensity Ambient Neon Glow Nodes */
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            z-index: 0;
+            filter: blur(180px);                        
+            opacity: 0.15;                             
+            pointer-events: none;
+        }
+        body::before {
+            background: radial-gradient(circle, var(--cyber-cyan) 0%, transparent 70%); 
+            top: -20%;
+            left: -10%;
+        }
+        body::after {
+            background: radial-gradient(circle, var(--cyber-neon-pink) 0%, transparent 70%); 
+            bottom: -20%;
+            right: -10%;
+        }
+
+        /* Animation Keyframes */
+        @keyframes cyberSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes cyberPulse {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 0 25px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.1);
+            }
+            50% { 
+                transform: scale(1.03); 
+                box-shadow: 0 0 45px rgba(255, 0, 127, 0.45), inset 0 0 25px rgba(255, 0, 127, 0.2);
+                border-color: var(--cyber-neon-pink);
+            }
+        }
+
+        /* ==========================================================================
+           2. COLD-GLOW NAVIGATION MODULE
+           ========================================================================== */
+        header {
+            background: linear-gradient(180deg, rgba(6, 8, 12, 0.95) 0%, rgba(10, 15, 30, 0.7) 100%);
+            border-bottom: 2px solid var(--glass-border);
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            height: 80px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 26px;
+            letter-spacing: 2px;
+            background: linear-gradient(90deg, #ffffff, var(--cyber-cyan), var(--cyber-neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        }
+
+        .logo img {
+            width: 46px;
+            height: 46px;
+            border-radius: 4px;
+            border: 2px solid var(--cyber-cyan);
+            object-fit: cover;
+            box-shadow: 0 0 12px var(--cyber-cyan);
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 35px;
+            align-items: center;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            align-items: center;
+        }
+
+        /* Home Icon Frame Redesign */
+        .nav-links img {
+            width: 44px;
+            height: 44px;
+            border-radius: 4px;
+            padding: 10px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid var(--cyber-cyan);
+            transition: all 0.25s var(--spring-physics);
+            filter: invert(1) drop-shadow(0 0 4px var(--cyber-cyan));
+        }
+
+        .nav-links li:hover img {
+            background: rgba(255, 0, 127, 0.15);
+            border-color: var(--cyber-neon-pink);
+            transform: scale(1.1);
+            filter: invert(1) drop-shadow(0 0 10px var(--cyber-neon-pink));
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--cyber-cyan);
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+        }
+
+        .btn-signout {
+            background: transparent;
+            color: #ff3333;
+            border: 1px solid #ff3333;
+            padding: 10px 22px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s var(--spring-physics);
+        }
+
+        .btn-signout:hover {
+            background: #ff3333;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 51, 51, 0.6);
+            transform: translateY(-2px);
+        }
+
+        /* ==========================================================================
+           3. MAIN PANEL HERO INTERFACE
+           ========================================================================== */
+        main {
+            min-height: calc(100vh - 150px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 80px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .welcome-container {
+            text-align: center;
+            max-width: 1200px;
+            width: 100%;
+            animation: cyberSlideUp 0.6s var(--spring-physics);
+        }
+
+        /* Branding Core Shield */
+        .icon {
+            width: 160px;
+            height: 160px;
+            margin: 0 auto 35px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(6, 8, 12, 0.8);
+            border: 2px solid var(--cyber-cyan);
+            padding: 10px;
+            animation: cyberPulse 5s ease-in-out infinite;
+        }
+
+        .icon img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 64px;
+            font-weight: 900;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            background: linear-gradient(180deg, #ffffff 40%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
+        }
+
+        .subtitle {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--cyber-cyan);
+            margin-bottom: 24px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(0, 240, 255, 0.5);
+        }
+
+        .description {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin: 0 auto 45px auto;
+            max-width: 650px;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
+        }
+
+        /* Tactical Control Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 80px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            padding: 16px 44px;
+            border-radius: 4px;
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            cursor: pointer;
+            transition: all 0.25s var(--spring-physics);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--cyber-cyan) 0%, #0099a6 100%);
+            color: #06080c;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 0 35px var(--cyber-cyan);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 0, 127, 0.05);
+            border: 1px solid var(--cyber-neon-pink);
+            color: #ffffff;
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.15);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 0, 127, 0.2);
+            border-color: #ff3399;
+            transform: translateY(-4px);
+            box-shadow: 0 0 30px var(--cyber-neon-pink);
+        }
+
+        /* ==========================================================================
+           4. CYBER CORE FEATURES GRID
+           ========================================================================== */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 40px 30px;
+            backdrop-filter: var(--blur-strength);
+            -webkit-backdrop-filter: var(--blur-strength);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s var(--spring-physics);
+            cursor: pointer;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Corner Tech Accent Accent Lines */
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 12px;
+            height: 12px;
+            border-top: 2px solid var(--cyber-cyan);
+            border-left: 2px solid var(--cyber-cyan);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--cyber-neon-pink);
+            background: var(--glass-bg-hover);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 45px rgba(255, 0, 127, 0.2);
+        }
+
+        .feature-card:hover::before {
+            border-color: var(--cyber-neon-pink);
+            width: 25px;
+            height: 25px;
+        }
+
+        .feature-icon {
+            font-size: 42px;
+            margin-bottom: 20px;
+            display: inline-block;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.4));
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.15);
+            filter: drop-shadow(0 0 12px var(--cyber-neon-pink));
+        }
+
+        .feature-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 20px;
+            color: #ffffff;
+            margin-bottom: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .feature-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* ==========================================================================
+           5. DATA CONSOLE INTERFACE FOOTER
+           ========================================================================== */
+        footer {
+            background-color: #04060a;
+            border-top: 2px solid var(--glass-border);
+            padding: 30px 40px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Responsive UI Optimization */
+        @media(max-width: 768px) {
+            .navbar { padding: 0 20px; }
+            .nav-links { display: none; } 
+            h1 { font-size: 44px; }
+            .subtitle { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="{% static "images/Dio Logo Design, Rage Logo Design, Bike Stickers….jpeg" %}" alt="Illumia Core" /> 
+                ILLUMIA
+            </div>
+            <div class="nav-right">
+                <ul class="nav-links">
+                    <li><a href="{% url 'home1' %}"><img src="{% static "images/home.jpeg" %}" alt="Home Node" /></a></li>
+                    <li><a href="{% url 'catergory' %}?q=ebook">📚 Browse Books</a></li>
+                    <li><a href="{% url 'downloaded_books' %}">📖 My Books</a></li>
+                    <a href="{% url 'course_materials' %}" style="..." >📖 Course Materials</a>
+                </ul>
+                <form method="POST" action="{% url 'logout' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-signout">Sign Out</button>
+                </form>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="welcome-container">
+            <div class="icon">
+                <img src="{% static "images/TM _ TATTOO MUSEUM _ ТАТУ МУЗЕЙ.jpeg" %}" alt="Main Emblem Architecture">
+            </div>
+            <h1>Welcome to Illumia</h1>
+            <p class="subtitle">Your Personal E-Book Library</p>
+            <p class="description">Discover, organize, and track your favorite e-books all in one place. Build your personal library and never lose track of your reading progress.</p>
+
+            <div class="action-buttons">
+                <a href="{% url 'catergory' %}?q=ebook" class="btn-primary">📚 Browse Books</a>
+                <a href="{% url 'downloaded_books' %}" class="btn-secondary">📖 My Downloaded Books</a>
+            </div>
+
+         <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">Discover</h3>
+                {% if discover_books %}
+                    <p class="feature-text">
+                        {% for b in discover_books %}{{ b.title }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </p>
+                {% else %}
+                    <p class="feature-text">Search and explore thousands of e-books across multiple categories and genres.</p>
+                {% endif %}
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📂</div>
+                <h3 class="feature-title">Organize</h3>
+                {% if favourite_count or bookmark_count %}
+                    <p class="feature-text">You have {{ favourite_count }} favourite{{ favourite_count|pluralize }} and {{ bookmark_count }} bookmark{{ bookmark_count|pluralize }} saved.</p>
+                {% else %}
+                    <p class="feature-text">Create custom collections, add bookmarks, and manage your favorite reads effortlessly.</p>
+                {% endif %}
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Track</h3>
+                {% if recent_books %}
+                    <p class="feature-text">
+                        Recently viewed: {% for r in recent_books %}{{ r.book.title }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    </p>
+                {% else %}
+                    <p class="feature-text">Keep track of your reading progress and see your recently accessed books.</p>
+                {% endif %}
+            </div>
+
+            {% if recommendations %}
+            <div style="max-width:1100px; margin:50px auto 0 auto; padding:0 20px; display:flex;flex-direction:column;align-item:center; justify-content:center;margin-left:50%">
+                <h2 style="font-family:'Orbitron',sans-serif; font-size:14px; font-weight:700; color:var(--cyber-cyan); letter-spacing:2px; text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:12px;">
+                    ✨ Recommended For You
+                    <span style="height:1px; flex:1; background:linear-gradient(90deg, var(--cyber-cyan), transparent);"></span>
+                </h2>
+                <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:14px;">
+                    {% for book in recommendations %}
+                    <a href="{% url 'catergory' %}?q={{ book.title|urlencode }}" style="text-decoration:none;">
+                        <div style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:10px; overflow:hidden; transition:all 0.25s;" onmouseover="this.style.borderColor='var(--cyber-cyan)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--glass-border)'; this.style.transform='translateY(0)'">
+                            <div style="width:100%; aspect-ratio:4/6; background:#0a0f18; overflow:hidden;">
+                                {% if book.cover_id %}
+                                    <img src="https://covers.openlibrary.org/b/id/{{ book.cover_id }}-M.jpg" alt="{{ book.title }}" style="width:100%; height:100%; object-fit:cover;">
+                                {% else %}
+                                    <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; font-size:28px;">📖</div>
+                                {% endif %}
+                            </div>
+                            <div style="padding:8px 10px;">
+                                <div style="font-size:11px; font-weight:600; color:#f5f7fa; line-height:1.3; margin-bottom:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{{ book.title }}</div>
+                                <div style="font-size:10px; color:#7d8aa3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ book.author|truncatechars:20 }}</div>
+                            </div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+</div>
+        
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Illumia Core Systems. All rights reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Translations removed — feature reverted
+

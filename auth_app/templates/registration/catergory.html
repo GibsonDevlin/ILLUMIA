@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Illumia Ebooks Section</title>
+    <link rel="stylesheet" href="{% static 'styles/catergory.css' %}?v=1.2">
+</head>
+
+<body>
+    <div id="head">
+        <div id="head1">
+            <div id="head-icon">
+                <img src="{% static 'images/Dio Logo Design, Rage Logo Design, Bike Stickers….jpeg' %}" alt="Illumia Logo" />
+                <span>[ILLUMIA]</span>
+            </div>
+        </div>
+
+        <div id="head2">
+            <div id="head-home">
+                <a href="{% url 'home1' %}">
+                    <img src="{% static 'images/home.jpeg' %}" alt="Home" />
+                </a>
+            </div>
+
+            <div id="head-search">
+                <input id="search" type="text" value="{{ search_query|default:'' }}" placeholder="Search books, authors, categories..." aria-label="Search site" />
+                <button id="search-btn" type="submit" aria-label="Submit search">
+                    <svg id="search-icon-2" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" role="img" aria-label="Search">
+                        <path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79L20 20.49 21.49 19 15.5 14zM9.5 14A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="quick-access-nav">
+                <button class="quick-btn" id="bookmarks-nav-btn" title="View Bookmarks">📌 Bookmarks</button>
+                <button class="quick-btn" id="favorites-nav-btn" title="View Favorites">⭐ Favorites</button>
+                <button class="quick-btn" id="recent-nav-btn" title="View Recent">🕐 Recent</button>
+                <a href="{% url 'downloaded_books' %}" class="quick-btn" title="View My Books">📚 My Books</a>
+                <a href="{% url 'course_materials' %}" class="quick-btn" title="Course Materials">📖 Course Materials</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="main">
+        {% if search_query %}
+            <section id="ebooks-head">
+                {% if books_by_category %}
+                    {% for category, books in books_by_category.items %}
+                        <div class="category-group">
+                            <h3>{{ category }}</h3>
+                            <ul>
+                                {% for book in books %}
+                                    <li><a href="#">{{ book.title }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="category-group">
+                        <h3>Search Results</h3>
+                        <ul>
+                            <li style="color: var(--text-muted); list-style: none; font-size: 14px;">No books found for "<strong>{{ search_query }}</strong>"</li>
+                        </ul>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section id="ebooks-section">
+                <h1 id="category-title">Ebooks Results</h1>
+                <div id="ebooks-list"></div>
+            </section>
+        {% endif %}
+    </div>
+
+    <!-- Book Reader Modal -->
+    <div id="book-reader-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.92); backdrop-filter:blur(12px); z-index:5000; align-items:center; justify-content:center;">
+        <div style="background:#0a0f18; border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:92%; max-width:820px; max-height:92vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 0 60px rgba(0,240,255,0.08), 0 30px 60px rgba(0,0,0,0.6);">
+
+            <!-- Header -->
+            <div style="padding:18px 26px; border-bottom:1px solid rgba(0,240,255,0.1); display:flex; justify-content:space-between; align-items:center; background:rgba(0,240,255,0.03); flex-shrink:0;">
+                <div>
+                    <div id="reader-title" style="font-family:'Orbitron',sans-serif; font-size:14px; font-weight:700; color:#00f0ff; letter-spacing:0.5px; margin-bottom:3px;"></div>
+                    <div id="reader-author" style="font-size:12px; color:#566c80; text-transform:uppercase; letter-spacing:1px;"></div>
+                </div>
+                <button onclick="closeReader()" style="background:rgba(255,0,127,0.08); border:1px solid rgba(255,0,127,0.25); color:#ff007f; width:34px; height:34px; border-radius:50%; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0;">✕</button>
+            </div>
+
+            <!-- Progress bar -->
+            <div style="height:3px; background:rgba(255,255,255,0.05); flex-shrink:0;">
+                <div id="reader-progress-bar" style="height:100%; background:linear-gradient(90deg,#00f0ff,#00b4d8); border-radius:0 2px 2px 0; transition:width 0.4s ease; width:0%;"></div>
+            </div>
+
+            <!-- Tab bar -->
+            <div id="reader-tabs" style="display:flex; border-bottom:1px solid rgba(0,240,255,0.08); background:rgba(0,240,255,0.02); flex-shrink:0;">
+                <button onclick="switchTab('read')" id="tab-read" style="padding:10px 20px; border:none; background:transparent; color:#00f0ff; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; cursor:pointer; border-bottom:2px solid #00f0ff;">📖 Read</button>
+                <button onclick="switchTab('rate')" id="tab-rate" style="padding:10px 20px; border:none; background:transparent; color:#566c80; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; cursor:pointer; border-bottom:2px solid transparent;">⭐ Ratings</button>
+            </div>
+
+            <!-- Reading content -->
+            <div id="reader-content" style="flex:1; overflow-y:auto; padding:44px 60px; font-family:Georgia,'Times New Roman',serif; font-size:17px; line-height:2; color:#c8d8e8; letter-spacing:0.3px; scroll-behavior:smooth;"></div>
+
+            <!-- Ratings panel (hidden by default) -->
+            <div id="ratings-panel" style="display:none; flex:1; overflow-y:auto; padding:30px 40px; background:#0a0f18;">
+
+                <!-- Average display -->
+                <div style="text-align:center; padding:20px 0; border-bottom:1px solid rgba(0,240,255,0.08); margin-bottom:24px;">
+                    <div id="avg-stars-display" style="font-size:36px; margin-bottom:6px; color:#566c80;">☆☆☆☆☆</div>
+                    <div id="avg-rating-text" style="font-size:13px; color:#566c80;">No ratings yet</div>
+                </div>
+
+                <!-- Rate this book -->
+                <div style="margin-bottom:28px; padding:20px; background:rgba(0,240,255,0.03); border:1px solid rgba(0,240,255,0.1); border-radius:10px;">
+                    <div style="font-size:13px; font-weight:700; color:#9cb1c4; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">Your Rating</div>
+                    <div id="star-selector" style="display:flex; gap:8px; margin-bottom:14px;">
+                        <span onclick="selectStar(1)" data-star="1" style="font-size:28px; cursor:pointer; color:#566c80;">☆</span>
+                        <span onclick="selectStar(2)" data-star="2" style="font-size:28px; cursor:pointer; color:#566c80;">☆</span>
+                        <span onclick="selectStar(3)" data-star="3" style="font-size:28px; cursor:pointer; color:#566c80;">☆</span>
+                        <span onclick="selectStar(4)" data-star="4" style="font-size:28px; cursor:pointer; color:#566c80;">☆</span>
+                        <span onclick="selectStar(5)" data-star="5" style="font-size:28px; cursor:pointer; color:#566c80;">☆</span>
+                    </div>
+                    <textarea id="review-input" placeholder="Write a review (optional)..." style="width:100%; padding:10px 14px; border-radius:8px; border:1px solid rgba(0,240,255,0.15); background:rgba(0,240,255,0.04); color:#c8d8e8; font-size:14px; line-height:1.6; resize:vertical; min-height:80px; outline:none;"></textarea>
+                    <button onclick="submitRating()" style="margin-top:12px; background:linear-gradient(135deg,#00f0ff,#00b4d8); border:none; color:#040609; padding:9px 24px; border-radius:8px; font-size:13px; font-weight:700; text-transform:uppercase; cursor:pointer;">Submit Rating</button>
+                    <div id="rating-feedback" style="margin-top:8px; font-size:13px; display:none;"></div>
+                </div>
+
+                <!-- Reviews list -->
+                <div>
+                    <div style="font-size:13px; font-weight:700; color:#9cb1c4; text-transform:uppercase; letter-spacing:1px; margin-bottom:14px;">All Reviews</div>
+                    <div id="reviews-list"></div>
+                </div>
+            </div>
+
+            <!-- Footer (reading nav) -->
+            <div id="reader-footer" style="padding:14px 26px; border-top:1px solid rgba(0,240,255,0.08); background:rgba(0,240,255,0.02); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; flex-shrink:0;">
+                <div id="reader-page-info" style="font-size:12px; color:#566c80; font-weight:600; letter-spacing:0.5px;"></div>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button onclick="changePage(-1)" style="background:rgba(0,240,255,0.05); border:1px solid rgba(0,240,255,0.2); color:#9cb1c4; padding:7px 16px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700; text-transform:uppercase;">← Prev</button>
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <input id="page-jump-input" type="number" min="1" placeholder="Pg" style="width:55px; padding:6px 8px; border-radius:6px; border:1px solid rgba(0,240,255,0.2); background:rgba(0,240,255,0.05); color:#fff; font-size:12px; text-align:center; outline:none;">
+                        <button onclick="jumpToPage()" style="background:transparent; border:1px solid rgba(0,240,255,0.2); color:#00f0ff; padding:6px 10px; border-radius:6px; cursor:pointer; font-size:11px; font-weight:700; text-transform:uppercase;">Go</button>
+                    </div>
+                    <button onclick="changePage(1)" style="background:linear-gradient(135deg,#00f0ff,#00b4d8); border:none; color:#040609; padding:7px 16px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700; text-transform:uppercase;">Next →</button>
+                </div>
+                <div id="reader-watermark" style="font-size:10px; color:#566c80; opacity:0.4; font-family:monospace; letter-spacing:1px;"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="{% static 'js/catergory.js' %}"></script>
+</body>
+</html>

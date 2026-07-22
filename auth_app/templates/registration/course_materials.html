@@ -1,0 +1,198 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Materials — Illumia</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500;600;700&display=swap');
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Rajdhani',sans-serif; }
+        body { background:#040609; color:#e0e0e0; min-height:100vh; }
+        .header { background:rgba(4,6,9,0.95); border-bottom:1px solid rgba(0,240,255,0.15); padding:18px 40px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:100; }
+        .logo { font-family:'Orbitron',sans-serif; font-size:18px; color:#00f0ff; letter-spacing:2px; }
+        .nav-links { display:flex; gap:12px; }
+        .nav-links a { color:#566c80; font-size:13px; text-decoration:none; border:1px solid rgba(0,240,255,0.2); padding:7px 16px; border-radius:6px; transition:all 0.2s; }
+        .nav-links a:hover { color:#00f0ff; border-color:#00f0ff; }
+        .nav-links a.primary { background:linear-gradient(135deg,#00f0ff,#00b4d8); color:#040609; border:none; font-weight:700; }
+        .container { max-width:1200px; margin:0 auto; padding:40px; }
+        .page-title { font-family:'Orbitron',sans-serif; font-size:22px; color:#fff; margin-bottom:8px; }
+        .page-sub { font-size:14px; color:#566c80; margin-bottom:36px; }
+        .messages { margin-bottom:20px; }
+        .message { padding:12px 16px; border-radius:8px; font-size:13px; margin-bottom:8px; }
+        .message.success { background:rgba(0,240,255,0.08); border:1px solid rgba(0,240,255,0.2); color:#00f0ff; }
+        .message.error { background:rgba(255,0,127,0.08); border:1px solid rgba(255,0,127,0.2); color:#ff007f; }
+        .materials-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:24px; }
+        .material-card { background:rgba(10,15,24,0.8); border:1px solid rgba(0,240,255,0.12); border-radius:14px; padding:24px; transition:all 0.25s; }
+        .material-card:hover { border-color:rgba(0,240,255,0.35); transform:translateY(-3px); }
+        .material-title { font-size:17px; font-weight:700; color:#f5f7fa; margin-bottom:6px; line-height:1.3; }
+        .material-lecturer { font-size:12px; color:#00f0ff; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+        .material-desc { font-size:13px; color:#7d8aa3; line-height:1.6; margin-bottom:16px; min-height:40px; }
+        .material-price { font-family:'Orbitron',sans-serif; font-size:20px; color:#facc15; margin-bottom:16px; }
+        .material-price span { font-size:12px; color:#566c80; font-family:'Rajdhani',sans-serif; }
+        .btn { display:block; text-align:center; padding:10px 0; border-radius:8px; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; cursor:pointer; transition:all 0.2s; text-decoration:none; border:none; width:100%; }
+        .btn-primary { background:linear-gradient(135deg,#00f0ff,#00b4d8); color:#040609; }
+        .btn-primary:hover { opacity:0.88; }
+        .btn-outline { background:transparent; border:1px solid rgba(0,240,255,0.3); color:#00f0ff; }
+        .btn-outline:hover { background:rgba(0,240,255,0.08); }
+        .btn-approved { background:rgba(0,200,100,0.1); border:1px solid rgba(0,200,100,0.3); color:#00c864; cursor:default; }
+        .btn-pending { background:rgba(250,204,21,0.1); border:1px solid rgba(250,204,21,0.3); color:#facc15; cursor:default; }
+        .btn-rejected { background:rgba(255,0,127,0.1); border:1px solid rgba(255,0,127,0.3); color:#ff007f; cursor:pointer; }
+        .empty { text-align:center; padding:80px 20px; color:#566c80; }
+        .empty h3 { font-size:18px; margin-bottom:8px; color:#9cb1c4; }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(8px); z-index:5000; align-items:center; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:#0a0f18; border:1px solid rgba(0,240,255,0.2); border-radius:14px; width:90%; max-width:480px; padding:30px; }
+        .modal h3 { font-family:'Orbitron',sans-serif; font-size:14px; color:#00f0ff; margin-bottom:6px; letter-spacing:1px; }
+        .modal p { font-size:13px; color:#7d8aa3; margin-bottom:20px; line-height:1.6; }
+        .modal input { width:100%; padding:10px 14px; border-radius:8px; border:1px solid rgba(0,240,255,0.2); background:rgba(0,240,255,0.04); color:#fff; font-size:14px; outline:none; margin-bottom:16px; }
+        .modal-buttons { display:flex; gap:10px; }
+        .modal-buttons button { flex:1; padding:10px; border-radius:8px; font-size:13px; font-weight:700; text-transform:uppercase; cursor:pointer; transition:all 0.2s; }
+        .bank-info { background:rgba(250,204,21,0.06); border:1px solid rgba(250,204,21,0.2); border-radius:8px; padding:14px; margin-bottom:16px; font-size:13px; color:#facc15; line-height:1.8; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">📚 COURSE MATERIALS</div>
+        <div class="nav-links">
+            <a href="{% url 'home1' %}">← Home</a>
+            {% if profile.is_lecturer %}
+                <a href="{% url 'upload_material' %}" class="primary">+ Upload Material</a>
+                <a href="{% url 'lecturer_dashboard' %}">My Dashboard</a>
+            {% else %}
+                <a href="{% url 'become_lecturer' %}">Become a Lecturer</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-title">Course Materials</div>
+        <div class="page-sub">Browse and access course materials uploaded by lecturers</div>
+
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if materials_with_status %}
+        <div class="materials-grid">
+            {% for item in materials_with_status %}
+            <div class="material-card">
+                <div class="material-title">{{ item.material.title }}</div>
+                <div class="material-lecturer">👨‍🏫 {{ item.material.lecturer.username }}</div>
+                <div class="material-desc">{{ item.material.description|default:"No description provided."|truncatechars:120 }}</div>
+                <div class="material-price">₦{{ item.material.price }} <span>/ one-time access</span></div>
+
+                {% if profile.is_lecturer %}
+                    {% if item.material.lecturer == request.user %}
+                        <a href="{% url 'view_material' item.material.id %}" class="btn btn-outline">Preview Your Material</a>
+                    {% else %}
+                        <button class="btn btn-approved">Lecturer Material</button>
+                    {% endif %}
+                {% else %}
+                    {% if item.status == 'approved' %}
+                        <a href="{% url 'view_material' item.material.id %}" class="btn btn-approved">✅ Access Material</a>
+                    {% elif item.status == 'pending' %}
+                        <button class="btn btn-pending">⏳ Awaiting Approval</button>
+                    {% elif item.status == 'rejected' %}
+                        <button class="btn btn-rejected" onclick="openRequestModal({{ item.material.id }}, '{{ item.material.title }}', '{{ item.material.price }}')">❌ Rejected — Request Again</button>
+                    {% else %}
+                        <button class="btn btn-primary" onclick="openRequestModal({{ item.material.id }}, '{{ item.material.title }}', '{{ item.material.price }}')">Request Access — ₦{{ item.material.price }}</button>
+                    {% endif %}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="empty">
+            <h3>No materials yet</h3>
+            <p>No course materials have been uploaded yet. Check back later.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Request Access Modal -->
+    <div class="modal-overlay" id="request-modal">
+        <div class="modal">
+            <h3>Request Access</h3>
+            <p id="modal-material-name" style="color:#c8d8e8; font-size:15px; font-weight:600; margin-bottom:4px;"></p>
+            <p>Transfer payment to the bank details below, then enter your payment reference to submit your request.</p>
+            <div class="bank-info">
+                🏦 Bank: First Bank Nigeria<br>
+                💳 Account: 3012345678<br>
+                👤 Name: Illumia Educational Services<br>
+                💰 Amount: ₦<span id="modal-price"></span>
+            </div>
+            <input type="text" id="payment-ref-input" placeholder="Enter payment reference / transaction ID">
+            <div class="modal-buttons">
+                <button onclick="closeRequestModal()" style="background:transparent; border:1px solid rgba(255,255,255,0.1); color:#566c80;">Cancel</button>
+                <button onclick="submitRequest()" style="background:linear-gradient(135deg,#00f0ff,#00b4d8); color:#040609; border:none;">Submit Request</button>
+            </div>
+            <div id="request-feedback" style="margin-top:12px; font-size:13px; display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let activeMaterialId = null;
+
+        function openRequestModal(id, title, price) {
+            activeMaterialId = id;
+            document.getElementById('modal-material-name').textContent = title;
+            document.getElementById('modal-price').textContent = price;
+            document.getElementById('request-modal').classList.add('active');
+        }
+
+        function closeRequestModal() {
+            document.getElementById('request-modal').classList.remove('active');
+            activeMaterialId = null;
+            document.getElementById('payment-ref-input').value = '';
+            document.getElementById('request-feedback').style.display = 'none';
+        }
+
+        async function submitRequest() {
+            const ref = document.getElementById('payment-ref-input').value.trim();
+            const feedback = document.getElementById('request-feedback');
+
+            if (!ref) {
+                feedback.textContent = 'Please enter your payment reference.';
+                feedback.style.color = '#ff007f';
+                feedback.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('payment_reference', ref);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            try {
+                const response = await fetch(`/accounts/request-access/${activeMaterialId}/`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                feedback.textContent = data.message || 'Request submitted successfully.';
+                feedback.style.color = '#00f0ff';
+                feedback.style.display = 'block';
+
+                setTimeout(() => {
+                    closeRequestModal();
+                    location.reload();
+                }, 2000);
+            } catch (error) {
+                feedback.textContent = 'Something went wrong. Please try again.';
+                feedback.style.color = '#ff007f';
+                feedback.style.display = 'block';
+            }
+        }
+
+        document.getElementById('request-modal').addEventListener('click', function(e) {
+            if (e.target === this) closeRequestModal();
+        });
+    </script>
+</body>
+</html>

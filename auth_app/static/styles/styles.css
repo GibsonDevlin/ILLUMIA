@@ -1,0 +1,237 @@
+body{
+    background-color: gray;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: brown;
+    overflow: hidden;
+}
+
+h2{
+    text-align: center;
+    color: green; 
+}
+
+a{
+    color: blue;
+    text-decoration: none;
+}
+
+button{
+    background-color: brown;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+
+}
+
+button:hover{
+    background-color: darkred;
+}
+
+/* home page styles */
+#centered-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    text-align: center;
+}
+
+#btn{
+    margin-top: 20px;
+    font-size: 16px;
+    outline: none;
+}
+
+#btn:focus {
+    box-shadow: 0 0 5px brown;
+}
+
+#logo {
+    width: 150px;
+    height: auto;
+      margin-bottom: 20px;
+      display: block; 
+} 
+
+/* form styling */
+form{
+    max-width: 400px;
+    margin: 0 auto;
+    border: 2px solid brown;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+}
+
+label{
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+input[type="text"], input[type="email"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid brown;
+    border-radius: 5px;
+     box-sizing: border-box;
+}
+
+#success-message {
+    color: brown;
+    font-weight: bold;
+    max-width: 400px;
+    margin: 0 auto;
+    border: 2px solid ;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    text-align: center;
+}
+
+#success-message p {
+    margin: 20px 0;
+}
+
+#success-message img {
+      width: 15px;
+       height: auto;
+      margin-bottom: 20px;
+      display: block; 
+} 
+
+
+
+/* for message form */
+body{
+    background-color: gray;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: brown;
+    overflow: hidden;
+}
+
+h1{
+    text-align: center;
+    color: blue;
+}
+
+a{
+    color: blue;
+    text-decoration: none;
+}
+
+button{
+    background-color: brown;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+
+}
+
+button:hover{
+    background-color: darkred;
+}
+
+/* home page styles */
+#centered-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    text-align: center;
+}
+
+#btn{
+    margin-top: 20px;
+    font-size: 16px;
+    outline: none;
+}
+
+#btn:focus {
+    box-shadow: 0 0 5px brown;
+}
+
+#logo {
+    width: 150px;
+    height: auto;
+    background-color: white;
+    margin-bottom: 20px;
+    display: block; 
+} 
+
+#logo:hover {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+#logo img {
+    width: 100%;
+    height: auto;
+}
+
+/* form styling */
+form{
+    max-width: 400px;
+    margin: 0 auto;
+    border: 2px solid brown;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+}
+
+label{
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+input[type="text"], input[type="email"], textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid brown;
+    border-radius: 5px;
+     box-sizing: border-box;
+}
+
+#success-message {
+    color: brown;
+    font-weight: bold;
+    max-width: 400px;
+    margin: 0 auto;
+    border: 2px solid ;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    text-align: center;
+}
+
+#success-message p {
+    margin: 20px 0;
+}
+
+#success-message img {
+      width: 15px;
+       height: auto;
+      margin-bottom: 20px;
+      display: block; 
+} 

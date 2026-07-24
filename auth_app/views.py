@@ -437,8 +437,7 @@ def remove_download(request, book_key):
 
 
 @login_required
-def read_book(request, book_key):   
-    """Serve paginated book content with session caching for speed"""
+def read_book(request, book_key):
     book_key = '/' + book_key if not book_key.startswith('/') else book_key
     book = Book.objects.filter(key=book_key).first()
 
@@ -447,23 +446,40 @@ def read_book(request, book_key):
 
     page_num = int(request.GET.get('page', 1))
     cache_key = f'book_pages_{book_key}'
-
-    # Check if pages are already cached in session
     cached = request.session.get(cache_key)
 
     if not cached:
         try:
+            headers = {
+                'User-Agent': 'Illumia/1.0 (https://illumia.onrender.com)'
+            }
+            
             search_url = f'https://gutendex.com/books/?search={urllib.parse.quote(book.title)}'
-            response = requests.get(search_url, timeout=10)
-            data = response.json()
+            
+            # Retry up to 3 times
+            response = None
+            for attempt in range(3):
+                try:
+                    response = requests.get(search_url, timeout=30, headers=headers)
+                    if response.status_code == 200 and response.text.strip():
+                        break
+                except requests.exceptions.RequestException:
+                    if attempt == 2:
+                        raise
+                    continue
 
+            if not response or not response.text.strip():
+                return JsonResponse({'error': 'Could not reach book source. Please try again.'}, status=503)
+
+            data = response.json()
             results = data.get('results', [])
+            
             if not results:
-                return JsonResponse({'error': 'This book is not available for in-site reading. Try the download link instead.'}, status=404)
+                return JsonResponse({'error': 'This book is not available for reading.'}, status=404)
 
             formats = results[0].get('formats', {})
-
             text_url = None
+            
             for key, url in formats.items():
                 if 'text/plain' in key and 'utf-8' in key.lower():
                     text_url = url
@@ -475,11 +491,14 @@ def read_book(request, book_key):
                         break
 
             if not text_url:
-                return JsonResponse({'error': 'No readable text version found for this book.'}, status=404)
+                return JsonResponse({'error': 'No readable text version found.'}, status=404)
 
-            text_response = requests.get(text_url, timeout=20)
+            text_response = requests.get(text_url, timeout=60, headers=headers)
             text_response.encoding = 'utf-8'
             book_text = text_response.text
+
+            if not book_text.strip():
+                return JsonResponse({'error': 'Book content is empty. Try again.'}, status=503)
 
             # Strip Gutenberg boilerplate
             start_markers = ['*** START OF THE PROJECT', '*** START OF THIS PROJECT', '***START OF THE PROJECT']
@@ -498,10 +517,7 @@ def read_book(request, book_key):
                     book_text = book_text[:idx]
                     break
 
-            # Normalize line endings
             book_text = book_text.replace('\r\n', '\n').replace('\r', '\n')
-
-            # Split into paragraphs
             paragraphs = [p.strip() for p in book_text.split('\n\n') if p.strip()]
 
             if len(paragraphs) < 5:
@@ -512,7 +528,6 @@ def read_book(request, book_key):
                     if chunk:
                         paragraphs.append(chunk)
 
-            # 8 paragraphs per page — feels like a real book page
             paragraphs_per_page = 8
             pages = []
             for i in range(0, len(paragraphs), paragraphs_per_page):
@@ -522,12 +537,13 @@ def read_book(request, book_key):
             if not pages:
                 pages = ['No content available.']
 
-            # Cache in session — limit to 500 pages to avoid session overflow
             request.session[cache_key] = pages[:500]
             request.session.modified = True
             cached = request.session[cache_key]
 
         except Exception as e:
+            import traceback
+            print(f"READ BOOK ERROR: {traceback.format_exc()}")
             return JsonResponse({'error': f'Could not load book: {str(e)}'}, status=500)
 
     total_pages = len(cached)
@@ -548,7 +564,7 @@ def read_book(request, book_key):
 def rate_book(request, book_key):
     """Save or update a user's rating and review for a book"""
     if request.method != 'POST':
-        return JsonResponse({'error': 'POST required'}, status=405)
+        return JsonResponse({'error': 'POST required'}, status=405) 
 
     book_key = '/' + book_key if not book_key.startswith('/') else book_key
     book = Book.objects.filter(key=book_key).first()

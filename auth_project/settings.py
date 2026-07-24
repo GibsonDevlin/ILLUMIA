@@ -26,7 +26,11 @@ SECRET_KEY = 'django-insecure-o9odrk&50!7i*+k16tz!*hs7a-e=qxp(ttqwflq-g09nm&)e0q
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'illumia.onrender.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition

@@ -20,6 +20,7 @@ from auth_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.home_view, name='home'),
     path('', views.home1View.as_view(), name='home'),
     # path('home1/', views.home1View.as_view(), name='home1'),
     path('catergory/', views.catergoryView.as_view(), name='catergory'),

@@ -719,7 +719,7 @@ def summarize_book(request, book_key):
     if not text_to_summarize or len(text_to_summarize) < 100:
         try:
             search_url = f'https://gutendex.com/books/?search={urllib.parse.quote(book.title)}'
-            response = requests.get(search_url, timeout=10)
+            response = requests.get(search_url, timeout=30)
             data = response.json()
             results = data.get('results', [])
             if results:
@@ -735,7 +735,7 @@ def summarize_book(request, book_key):
                             text_url = url
                             break
                 if text_url:
-                    text_response = requests.get(text_url, timeout=15)
+                    text_response = requests.get(text_url, timeout=60)
                     text_response.encoding = 'utf-8'
                     full_text = text_response.text
 

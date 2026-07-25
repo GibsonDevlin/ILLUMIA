@@ -470,6 +470,7 @@ async function jumpToPage() {
   renderPage(pageNum);
 }
 
+
 // ============================================
 // RATINGS & REVIEWS
 // ============================================

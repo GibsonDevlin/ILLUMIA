@@ -1101,3 +1101,20 @@ def delete_material(request, material_id):
         return redirect('lecturer_dashboard')
 
     return redirect('lecturer_dashboard')
+
+
+@login_required
+def fetch_book_text(request):
+    """Proxy view to fetch Gutenberg book text server-side, avoiding CORS"""
+    url = request.GET.get('url', '')
+    
+    if not url or 'gutenberg.org' not in url:
+        return JsonResponse({'error': 'Invalid URL'}, status=400)
+    
+    try:
+        headers = {'User-Agent': 'Illumia/1.0 (https://illumia.onrender.com)'}
+        response = requests.get(url, timeout=30, headers=headers)
+        response.encoding = 'utf-8'
+        return HttpResponse(response.text, content_type='text/plain; charset=utf-8')
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

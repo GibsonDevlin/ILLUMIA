@@ -36,4 +36,5 @@ urlpatterns = [
     path('lecturer-dashboard/', views.lecturer_dashboard, name='lecturer_dashboard'),
     path('become-lecturer/', views.become_lecturer, name='become_lecturer'),
     path('delete-material/<int:material_id>/', views.delete_material, name='delete_material'),
+    path('fetch-book-text/', views.fetch_book_text, name='fetch_book_text'),
 ]

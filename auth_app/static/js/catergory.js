@@ -363,7 +363,8 @@ async function openReader(bookKey) {
       return;
     }
 
-    const textRes = await fetch(textUrl);
+    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(textUrl)}`;
+    const textRes = await fetch(proxyUrl);
     let bookText = await textRes.text();
 
     // Strip Gutenberg boilerplate
@@ -476,7 +477,7 @@ async function jumpToPage() {
 // ============================================
 let selectedStars = 0;
 
-function switchTab(tab) {
+unction switchTab(tab) {
     const readContent = document.getElementById('reader-content');
     const ratingsPanel = document.getElementById('ratings-panel');
     const readerFooter = document.getElementById('reader-footer');

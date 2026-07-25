@@ -300,107 +300,175 @@ async function initializePageScripts() {
 
 
 // ============================================
-// IN-SITE BOOK READER
+// IN-SITE BOOK READER — client-side Gutendex
 // ============================================
 let currentBookKey = null;
 let currentPage = 1;
 let totalPages = 1;
+let bookPages = [];
+let currentBookTitle = '';
+let currentBookAuthor = '';
 
 async function openReader(bookKey) {
   currentBookKey = bookKey;
   currentPage = 1;
+  bookPages = [];
 
   const modal = document.getElementById('book-reader-modal');
   const content = document.getElementById('reader-content');
 
   modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
   content.innerHTML = '<p style="text-align:center; color:#7d8aa3; padding:40px 0;">Loading book...</p>';
 
-  await loadPage(1);
-}
+  // Get book title from the card
+  const card = document.querySelector(`.book-card-buttons[data-key="${bookKey}"]`);
+  currentBookTitle = card ? card.getAttribute('data-title') : 'Unknown Title';
+  currentBookAuthor = card ? card.getAttribute('data-author') : 'Unknown Author';
 
-async function loadPage(page) {
-  const cleanKey = currentBookKey.startsWith('/') ? currentBookKey.slice(1) : currentBookKey;
-  const content = document.getElementById('reader-content');
+  document.getElementById('reader-title').textContent = currentBookTitle;
+  document.getElementById('reader-author').textContent = currentBookAuthor;
 
   try {
-    const response = await fetch(`/accounts/read-book/${cleanKey}/?page=${page}`);
-    const data = await response.json();
+    // Search Gutendex directly from browser
+    const searchRes = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(currentBookTitle)}`);
+    const searchData = await searchRes.json();
+    const results = searchData.results || [];
 
-    if (data.error) {
-      content.innerHTML = `<p style="text-align:center; color:#ff6b6b; padding:40px 0;">${data.error}</p>`;
+    if (!results.length) {
+      content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:40px 0;">This book is not available for reading. Try the download link instead.</p>';
       return;
     }
 
-    // Update header
-    document.getElementById('reader-title').textContent = data.title;
-    document.getElementById('reader-author').textContent = data.author;
+    const formats = results[0].formats || {};
+    let textUrl = null;
 
-    // Update page info
-    currentPage = data.page;
-    totalPages = data.total_pages;
-    document.getElementById('reader-page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+    for (const [key, url] of Object.entries(formats)) {
+      if (key.includes('text/plain') && key.toLowerCase().includes('utf-8')) {
+        textUrl = url;
+        break;
+      }
+    }
+    if (!textUrl) {
+      for (const [key, url] of Object.entries(formats)) {
+        if (key.includes('text/plain')) {
+          textUrl = url;
+          break;
+        }
+      }
+    }
 
-    // Update progress bar
-    const progress = (currentPage / totalPages) * 100;
-    document.getElementById('reader-progress-bar').style.width = progress + '%';
+    if (!textUrl) {
+      content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:40px 0;">No readable text version found for this book.</p>';
+      return;
+    }
 
-    // Update watermark with logged-in user's username
-    document.getElementById('reader-watermark').textContent = data.username || '';
+    const textRes = await fetch(textUrl);
+    let bookText = await textRes.text();
 
-    // Format content — split into paragraphs
-    const paragraphs = data.content
-      .split(/\n\n+/)
-      .filter(p => p.trim().length > 0)
-      .map(p => `<p style="margin-bottom:1.4em;">${p.replace(/\n/g, ' ').trim()}</p>`)
-      .join('');
+    // Strip Gutenberg boilerplate
+    const startMarkers = ['*** START OF THE PROJECT', '*** START OF THIS PROJECT', '***START OF THE PROJECT'];
+    const endMarkers = ['*** END OF THE PROJECT', '*** END OF THIS PROJECT', '***END OF THE PROJECT'];
 
-    content.innerHTML = paragraphs;
-    content.scrollTop = 0;
+    for (const marker of startMarkers) {
+      const idx = bookText.indexOf(marker);
+      if (idx !== -1) {
+        const eol = bookText.indexOf('\n', idx);
+        bookText = bookText.slice(eol + 1);
+        break;
+      }
+    }
+    for (const marker of endMarkers) {
+      const idx = bookText.indexOf(marker);
+      if (idx !== -1) {
+        bookText = bookText.slice(0, idx);
+        break;
+      }
+    }
 
-    // Update button states
-  const prevBtn = document.getElementById('prev-page-btn');
-const nextBtn = document.getElementById('next-page-btn');
-if (prevBtn) prevBtn.style.opacity = currentPage <= 1 ? '0.4' : '1';
-if (nextBtn) nextBtn.style.opacity = currentPage >= totalPages ? '0.4' : '1';
+    bookText = bookText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    let paragraphs = bookText.split('\n\n').map(p => p.trim()).filter(p => p.length > 0);
+
+    if (paragraphs.length < 5) {
+      const lines = bookText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      paragraphs = [];
+      for (let i = 0; i < lines.length; i += 6) {
+        const chunk = lines.slice(i, i + 6).join(' ');
+        if (chunk) paragraphs.push(chunk);
+      }
+    }
+
+    // Split into pages of 8 paragraphs
+    const perPage = 8;
+    bookPages = [];
+    for (let i = 0; i < paragraphs.length; i += perPage) {
+      bookPages.push(paragraphs.slice(i, i + perPage).join('\n\n'));
+    }
+
+    if (!bookPages.length) bookPages = ['No content available.'];
+
+    totalPages = bookPages.length;
+    renderPage(1);
+
+    // Record view in Django (fire and forget)
+    const cleanKey = bookKey.startsWith('/') ? bookKey.slice(1) : bookKey;
+    fetch(`/accounts/mark-viewed/${cleanKey}/`, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).catch(() => {});
 
   } catch (error) {
-    content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:40px 0;">Could not load this page. Please try again.</p>';
+    content.innerHTML = `<p style="text-align:center; color:#ff6b6b; padding:40px 0;">Could not load book. Please try again.</p>`;
     console.error('Reader error:', error);
   }
+}
+
+function renderPage(page) {
+  currentPage = page;
+  const content = document.getElementById('reader-content');
+  const pageContent = bookPages[page - 1] || '';
+
+  const paragraphs = pageContent
+    .split(/\n\n+/)
+    .filter(p => p.trim().length > 0)
+    .map(p => `<p style="margin-bottom:1.4em;">${p.replace(/\n/g, ' ').trim()}</p>`)
+    .join('');
+
+  content.innerHTML = paragraphs;
+  content.scrollTop = 0;
+
+  document.getElementById('reader-page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+  const progress = (currentPage / totalPages) * 100;
+  document.getElementById('reader-progress-bar').style.width = progress + '%';
+
+  const prevBtn = document.getElementById('prev-page-btn');
+  const nextBtn = document.getElementById('next-page-btn');
+  if (prevBtn) prevBtn.style.opacity = currentPage <= 1 ? '0.4' : '1';
+  if (nextBtn) nextBtn.style.opacity = currentPage >= totalPages ? '0.4' : '1';
+
+  // Watermark
+  const watermark = document.getElementById('reader-watermark');
+  if (watermark) watermark.textContent = document.body.getAttribute('data-username') || '';
+}
+
+async function loadPage(page) {
+  renderPage(page);
 }
 
 async function changePage(direction) {
   const newPage = currentPage + direction;
   if (newPage < 1 || newPage > totalPages) return;
-  await loadPage(newPage);
+  renderPage(newPage);
 }
 
 async function jumpToPage() {
-    const input = document.getElementById('page-jump-input');
-    const pageNum = parseInt(input.value);
-    if (!pageNum || pageNum < 1 || pageNum > totalPages) {
-        input.style.borderColor = '#ff6b6b';
-        setTimeout(() => input.style.borderColor = '#2d3f5a', 1000);
-        return;
-    }
-    input.value = '';
-    await loadPage(pageNum);
+  const input = document.getElementById('page-jump-input');
+  const pageNum = parseInt(input.value);
+  if (!pageNum || pageNum < 1 || pageNum > totalPages) {
+    input.style.borderColor = '#ff6b6b';
+    setTimeout(() => input.style.borderColor = '#2d3f5a', 1000);
+    return;
+  }
+  input.value = '';
+  renderPage(pageNum);
 }
-
-function closeReader() {
-    document.getElementById('book-reader-modal').style.display = 'none';
-    document.body.style.overflow = 'auto';
-    currentBookKey = null;
-    currentPage = 1;
-    selectedStars = 0;
-    switchTab('read');
-}
-
-document.getElementById('book-reader-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeReader();
-});
-
 
 // ============================================
 // RATINGS & REVIEWS

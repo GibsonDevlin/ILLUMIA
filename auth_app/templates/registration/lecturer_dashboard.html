@@ -39,6 +39,31 @@
         .stat { background:rgba(10,15,24,0.8); border:1px solid rgba(0,240,255,0.12); border-radius:10px; padding:20px; text-align:center; }
         .stat-val { font-family:'Orbitron',sans-serif; font-size:24px; color:#00f0ff; margin-bottom:4px; }
         .stat-lbl { font-size:11px; color:#566c80; text-transform:uppercase; letter-spacing:1px; }
+    
+/* ===== Responsive ===== */
+@media (max-width:1024px){ .container{ padding:28px 24px; } .header{ padding:16px 24px; } }
+@media (max-width:768px){
+  .header{ flex-direction:column; align-items:flex-start; gap:12px; padding:14px 16px; }
+  .nav-links{ flex-wrap:wrap; width:100%; }
+  .nav-links a{ flex:1 1 auto; text-align:center; }
+  .container{ padding:22px 16px; }
+  .stats{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+  .stat{ min-width:0; }
+
+  .table-card, .tables-grid > div { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table { min-width:520px; }
+
+  .action-btns{ display:flex; flex-wrap:wrap; gap:6px; }
+}
+@media (max-width:420px){ .stats{ grid-template-columns:1fr; } }
+
+    
+@media (max-width:768px){
+  .stats > *, .stat{ min-width:0; }
+  .stat-val{ overflow-wrap:anywhere; font-size:20px; }
+  .logo{ overflow-wrap:anywhere; }
+}
+
     </style>
 </head>
 <body>

@@ -24,6 +24,16 @@
         .btn-outline:hover { border-color:#00f0ff; color:#00f0ff; }
         .messages { margin-bottom:20px; }
         .message { padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:8px; background:rgba(255,0,127,0.08); border:1px solid rgba(255,0,127,0.2); color:#ff007f; }
+    
+/* ===== Responsive ===== */
+@media (max-width:640px){
+  body{ padding:24px 14px; justify-content:flex-start; }
+  .card{ padding:26px 18px; border-radius:14px; }
+  h1{ font-size:16px; letter-spacing:1px; }
+  .btn-row{ flex-direction:column; }
+  input, textarea, select{ font-size:16px; } /* prevents iOS zoom */
+}
+
     </style>
 </head>
 <body>

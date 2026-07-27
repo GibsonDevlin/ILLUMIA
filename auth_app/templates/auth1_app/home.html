@@ -3,6 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Home - Illumia</title>
     <style>
         /* ==========================================================================
@@ -440,12 +441,138 @@
             z-index: 1;
         }
 
-        /* Responsive UI Optimization */
-        @media(max-width: 768px) {
-            .navbar { padding: 0 20px; }
-            .nav-links { display: none; } 
-            h1 { font-size: 44px; }
-            .subtitle { font-size: 18px; }
+        /* ==========================================================================
+           6. RESPONSIVE UI OPTIMIZATION
+           ========================================================================== */
+        img { max-width: 100%; }
+
+        .recommendations {
+            max-width: 1100px;
+            width: 100%;
+            margin: 50px auto 0 auto;
+            padding: 0 4px;
+            text-align: left;
+        }
+
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        /* Large desktop / small laptop */
+        @media (max-width: 1024px) {
+            .navbar { padding: 0 24px; }
+            .nav-right { gap: 20px; }
+            .nav-links { gap: 18px; }
+            h1 { font-size: 52px; }
+            main { padding: 60px 18px; }
+            .rec-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+
+        /* Tablet */
+        @media (max-width: 900px) {
+            .navbar {
+                height: auto;
+                flex-wrap: wrap;
+                gap: 14px;
+                padding: 14px 20px;
+            }
+            .logo { font-size: 22px; }
+            .logo img { width: 38px; height: 38px; }
+            .nav-right {
+                width: 100%;
+                justify-content: space-between;
+                gap: 14px;
+            }
+            .nav-links {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                gap: 16px;
+                padding-bottom: 4px;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                min-width: 0;
+            }
+            .nav-links::-webkit-scrollbar { display: none; }
+            .nav-links li, .nav-links a { flex: 0 0 auto; white-space: nowrap; }
+            .nav-links img { width: 36px; height: 36px; padding: 7px; }
+            .nav-links a { font-size: 13px; letter-spacing: 1px; }
+            main { min-height: 0; padding: 50px 18px; }
+            .features { gap: 20px; }
+        }
+
+        /* Phone */
+        @media (max-width: 640px) {
+            body::before, body::after {
+                width: 420px;
+                height: 420px;
+                filter: blur(120px);
+            }
+            .navbar { padding: 12px 16px; }
+            .logo { font-size: 18px; gap: 10px; letter-spacing: 1px; }
+            .logo img { width: 32px; height: 32px; }
+            .btn-signout { padding: 9px 14px; font-size: 11px; }
+            .icon {
+                width: 110px;
+                height: 110px;
+                margin-bottom: 24px;
+            }
+            h1 {
+                font-size: 34px;
+                letter-spacing: 0;
+                line-height: 1.15;
+                word-break: break-word;
+            }
+            .subtitle {
+                font-size: 15px;
+                letter-spacing: 1.5px;
+                margin-bottom: 18px;
+            }
+            .description {
+                font-size: 15px;
+                line-height: 1.7;
+                margin-bottom: 32px;
+            }
+            .action-buttons {
+                flex-direction: column;
+                gap: 14px;
+                margin-bottom: 50px;
+            }
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                justify-content: center;
+                padding: 15px 20px;
+                font-size: 14px;
+            }
+            .features { grid-template-columns: 1fr; }
+            .feature-card { padding: 28px 20px; }
+            .feature-icon { font-size: 34px; margin-bottom: 14px; }
+            .feature-title { font-size: 17px; }
+            .feature-text { font-size: 14px; }
+            .recommendations { margin-top: 36px; }
+            .rec-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+            }
+            footer {
+                padding: 22px 18px;
+                font-size: 12px;
+                letter-spacing: 0.5px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            h1 { font-size: 28px; }
+            .rec-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        /* Short landscape phones */
+        @media (max-height: 520px) and (orientation: landscape) {
+            main { min-height: 0; padding: 40px 18px; }
+            .icon { width: 90px; height: 90px; }
         }
     </style>
 </head>
@@ -461,7 +588,7 @@
                     <li><a href="{% url 'home1' %}"><img src="{% static "images/home.jpeg" %}" alt="Home Node" /></a></li>
                     <li><a href="{% url 'catergory' %}?q=ebook">📚 Browse Books</a></li>
                     <li><a href="{% url 'downloaded_books' %}">📖 My Books</a></li>
-                    <a href="{% url 'course_materials' %}" style="..." >📖 Course Materials</a>
+                    <li><a href="{% url 'course_materials' %}">📖 Course Materials</a></li>
                 </ul>
                 <form method="POST" action="{% url 'logout' %}" style="margin: 0;">
                     {% csrf_token %}
@@ -519,12 +646,12 @@
             </div>
 
             {% if recommendations %}
-            <div style="max-width:1100px; margin:50px auto 0 auto; padding:0 20px; display:flex;flex-direction:column;align-item:center; justify-content:center;margin-left:50%">
+            <div class="recommendations">
                 <h2 style="font-family:'Orbitron',sans-serif; font-size:14px; font-weight:700; color:var(--cyber-cyan); letter-spacing:2px; text-transform:uppercase; margin-bottom:20px; display:flex; align-items:center; gap:12px;">
                     ✨ Recommended For You
                     <span style="height:1px; flex:1; background:linear-gradient(90deg, var(--cyber-cyan), transparent);"></span>
                 </h2>
-                <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:14px;">
+                <div class="rec-grid">
                     {% for book in recommendations %}
                     <a href="{% url 'catergory' %}?q={{ book.title|urlencode }}" style="text-decoration:none;">
                         <div style="background:var(--glass-bg); border:1px solid var(--glass-border); border-radius:10px; overflow:hidden; transition:all 0.25s;" onmouseover="this.style.borderColor='var(--cyber-cyan)'; this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--glass-border)'; this.style.transform='translateY(0)'">

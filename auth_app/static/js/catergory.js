@@ -566,7 +566,7 @@ async function summarizeBook(bookKey) {
   modal.id = 'summary-modal';
   modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(12px); z-index:6000; display:flex; align-items:center; justify-content:center;';
   modal.innerHTML = `
-    <div style="background:#0a0f18; border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:90%; max-width:700px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden;">
+     <div style="background:#0a0f18; border:1px solid rgba(0,240,255,0.2); border-radius:16px; width:90%; max-width:700px; max-height:85vh; display:flex; flex-direction:column; overflow:hidden;">
       <div style="padding:18px 26px; border-bottom:1px solid rgba(0,240,255,0.1); display:flex; justify-content:space-between; align-items:center;">
         <div style="font-family:'Orbitron',sans-serif; font-size:13px; font-weight:700; color:#00f0ff;">📝 Book Summary</div>
         <button onclick="document.getElementById('summary-modal').remove(); document.body.style.overflow='auto';" style="background:rgba(255,0,127,0.08); border:1px solid rgba(255,0,127,0.25); color:#ff007f; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:14px;">✕</button>

@@ -1213,3 +1213,116 @@ padding: 5px;
 .trust-note{ font-size:13px; color:#667085; margin-top:10px; }
 
 /* fallback for the original simple list if still used */
+
+/* ==========================================================================
+   RESPONSIVE LAYER — added for full mobile/tablet support
+   ========================================================================== */
+
+html, body { max-width: 100%; overflow-x: hidden; }
+img, svg, video, iframe { max-width: 100%; }
+#page3a #slide img { object-fit: cover; }
+
+/* ---------- Laptop / small desktop ---------- */
+@media (max-width: 1200px) {
+  #page3c-search { width: min(92vw, 800px); }
+  #page4 { padding-left: 20px; padding-right: 20px; }
+  #page3a-name { font-size: 52px; }
+}
+
+/* ---------- Tablet ---------- */
+@media (max-width: 992px) {
+  #page1 { flex-wrap: wrap; gap: 16px; padding: 10px 16px; }
+  #page1a { flex-wrap: wrap; gap: 12px; width: 100%; justify-content: space-between; }
+  #page1a-search { width: 100%; max-width: 100%; }
+  #page1b { flex-wrap: wrap; gap: 16px; width: 100%; justify-content: center; }
+  #page2 { flex-wrap: wrap; gap: 16px; padding: 24px 16px; }
+
+  #page3 { width: 94%; height: auto; }
+  #page3a { height: 300px; }
+  #page3a-name { font-size: 40px; left: 5%; }
+  #page3b { height: auto; padding: 24px 16px; }
+  #page3b #head { font-size: 28px; }
+  #page3b #body { font-size: 17px; }
+
+  #page3c { position: static; width: 100%; padding: 0 16px 24px; }
+  #page3c-search { width: 100%; height: auto; flex-wrap: wrap; gap: 10px; padding: 10px; }
+  #page3c-search-input { width: 100%; font-size: 16px; }
+  #search-btn2 { width: 100%; height: 46px; }
+
+  #about-contact { flex-direction: column; gap: 24px; margin: 32px 16px; padding: 20px; }
+  #page6-all { flex-wrap: wrap; gap: 24px; }
+  #page6-div { width: 100%; }
+
+  /* dropdown panels must never exceed the screen */
+  #dropdown-list, #signin-dropdown, #link-dropdown {
+    width: min(92vw, 320px);
+    max-width: 92vw;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  #main-link { flex-wrap: wrap; gap: 20px; }
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 768px) {
+  #page1 { flex-direction: column; align-items: stretch; }
+  #page1a { flex-direction: column; align-items: stretch; }
+  #page1a-name { justify-content: center; font-size: 18px; }
+  #page1a-search { height: 44px; }
+  #search { font-size: 16px; }
+  #page1b { gap: 12px; }
+  #course { width: 100%; justify-content: center; padding: 12px 16px; }
+  #dropdown { width: 100%; }
+  #Download button { width: 100%; }
+  #signin-dropdown-container { width: 100%; }
+  #sign-in { width: 100%; justify-content: center; padding: 10px; }
+
+  #page3a { height: 220px; }
+  #page3a-name { font-size: 28px; left: 5%; }
+  #page3b #head { font-size: 22px; }
+  #page3b #body { font-size: 15px; }
+
+  #page4 { width: 100%; padding: 40px 16px 0; }
+  #page4a-head { font-size: 22px; }
+  #page4a-body { font-size: 15px; }
+
+  /* carousel becomes a swipeable strip */
+  #page4b { margin: 24px auto; max-width: 100%; overflow: hidden; }
+  #page4b-slides {
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+  #page4b-slides::-webkit-scrollbar { display: none; }
+  .slide { flex: 0 0 auto; width: min(78vw, 260px); scroll-snap-align: center; }
+  #controls { display: flex; justify-content: center; }
+  #prev-btn, #next-btn { padding: 10px 16px; }
+
+  #faq-section { padding: 16px; gap: 14px; }
+  #faq-question-1, #faq-question-2, #faq-question-3 { font-size: 16px; padding: 14px 40px 14px 14px; text-align: left; }
+
+  .feature-cards, .stats, .contact-cards { flex-direction: column; }
+  .feature, .stat, .contact-card { width: 100%; min-width: 0; }
+  #about-us h2, #contact-us h2 { font-size: 20px; }
+  #contact-form input, #contact-form textarea { font-size: 16px; }
+  .btn-primary { width: 100%; }
+  .messages-wrapper { left: 10px; right: 10px; max-width: none; }
+}
+
+/* ---------- Small phones ---------- */
+@media (max-width: 480px) {
+  #page1a-name { font-size: 17px; }
+  #page1a-name img { width: 38px; height: 38px; }
+  #page3a { height: 180px; }
+  #page3a-name { font-size: 22px; }
+  #page3b #head { font-size: 19px; }
+  #page3b #body { font-size: 14px; }
+  #page4a-head { font-size: 20px; }
+  .slide { width: 85vw; height: 280px; }
+  #page4b-div1 { gap: 20px; padding: 14px; }
+  #page4b-div1-head { font-size: 17px; }
+  .testimonial-controls { flex-wrap: wrap; }
+  .social-links { flex-wrap: wrap; }
+}

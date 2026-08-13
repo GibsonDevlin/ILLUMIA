@@ -471,7 +471,7 @@ def read_book(request, book_key):
             response = None
             for attempt in range(3):
                 try:
-                    response = requests.get(search_url, timeout=30, headers=headers)
+                    response = requests.get(search_url, timeout=60, headers=headers)
                     if response.status_code == 200 and response.text.strip():
                         break
                 except requests.exceptions.RequestException:
@@ -504,7 +504,7 @@ def read_book(request, book_key):
             if not text_url:
                 return JsonResponse({'error': 'No readable text version found.'}, status=404)
 
-            text_response = requests.get(text_url, timeout=60, headers=headers)
+            text_response = requests.get(text_url, timeout=120, headers=headers)
             text_response.encoding = 'utf-8'
             book_text = text_response.text
 

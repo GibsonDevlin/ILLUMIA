@@ -24,7 +24,18 @@ import urllib.parse
 import json
 import requests
 import numpy as np
-import nltk 
+import nltk
+import os
+
+# Ensure NLTK data is available on Render (downloads to a writable path)
+_nltk_data_path = '/opt/render/nltk_data'
+os.makedirs(_nltk_data_path, exist_ok=True)
+if _nltk_data_path not in nltk.data.path:
+    nltk.data.path.append(_nltk_data_path)
+
+nltk.download('punkt_tab', download_dir=_nltk_data_path, quiet=True)
+nltk.download('stopwords', download_dir=_nltk_data_path, quiet=True)
+nltk.download('averaged_perceptron_tagger', download_dir=_nltk_data_path, quiet=True)
 
 
 # import the RegisterForm and ContactForm from forms .py

@@ -445,8 +445,6 @@ def remove_download(request, book_key):
     return JsonResponse({'status': 'removed'})
 
 
-
-
 @login_required
 def read_book(request, book_key):
     book_key = '/' + book_key if not book_key.startswith('/') else book_key
@@ -466,18 +464,12 @@ def read_book(request, book_key):
             }
             
             search_url = f'https://gutendex.com/books/?search={urllib.parse.quote(book.title)}'
-            
-            # Retry up to 3 times
-            response = None
-            for attempt in range(3):
-                try:
-                    response = requests.get(search_url, timeout=60, headers=headers)
-                    if response.status_code == 200 and response.text.strip():
-                        break
-                except requests.exceptions.RequestException:
-                    if attempt == 2:
-                        raise
-                    continue
+
+            # Single attempt with short timeout to stay within Render's 30s limit
+            try:
+                response = requests.get(search_url, timeout=15, headers=headers)
+            except requests.exceptions.Timeout:
+                return JsonResponse({'error': 'Book source is taking too long. Please try again in a moment.'}, status=503)
 
             if not response or not response.text.strip():
                 return JsonResponse({'error': 'Could not reach book source. Please try again.'}, status=503)
@@ -504,9 +496,16 @@ def read_book(request, book_key):
             if not text_url:
                 return JsonResponse({'error': 'No readable text version found.'}, status=404)
 
-            text_response = requests.get(text_url, timeout=120, headers=headers)
+            # Stream the book text and stop at 300KB to avoid Render timeout
+            text_response = requests.get(text_url, timeout=20, headers=headers, stream=True)
             text_response.encoding = 'utf-8'
-            book_text = text_response.text
+            book_text = ''
+            size = 0
+            for chunk in text_response.iter_content(chunk_size=8192, decode_unicode=True):
+                book_text += chunk
+                size += len(chunk)
+                if size > 300000:  # 300KB is plenty for a good read
+                    break
 
             if not book_text.strip():
                 return JsonResponse({'error': 'Book content is empty. Try again.'}, status=503)
@@ -1030,7 +1029,7 @@ def become_lecturer(request):
         return redirect('lecturer_dashboard')
     return render(request, 'registration/become_lecturer.html', {'profile': profile})
 
-login_required
+@login_required
 def view_material(request, material_id):
     """Student views a material they have paid for — with watermark"""
     from .models import CourseMaterial, MaterialAccess, UserProfile
@@ -1066,32 +1065,6 @@ def view_material(request, material_id):
 
 
 @login_required
-def lecturer_dashboard(request):
-    """Lecturer sees their uploaded materials and pending access requests"""
-    from .models import CourseMaterial, MaterialAccess, UserProfile
-    profile = get_or_create_profile(request.user)
-
-    if not profile.is_lecturer:
-        return redirect('course_materials')
-
-    my_materials = CourseMaterial.objects.filter(lecturer=request.user).order_by('-created_at')
-    pending_requests = MaterialAccess.objects.filter(
-        material__lecturer=request.user,
-        status='pending'
-    ).select_related('student', 'material').order_by('-requested_at')
-    approved_requests = MaterialAccess.objects.filter(
-        material__lecturer=request.user,
-        status='approved'
-    ).select_related('student', 'material').order_by('-approved_at')
-
-    return render(request, 'registration/lecturer_dashboard.html', {
-        'my_materials': my_materials,
-        'pending_requests': pending_requests,
-        'approved_requests': approved_requests,
-        'profile': profile,
-    })
-
-@login_required
 def delete_material(request, material_id):
     from .models import CourseMaterial, UserProfile
     profile = get_or_create_profile(request.user)
@@ -1124,8 +1097,18 @@ def fetch_book_text(request):
     
     try:
         headers = {'User-Agent': 'Illumia/1.0 (https://illumia.onrender.com)'}
-        response = requests.get(url, timeout=30, headers=headers)
+        response = requests.get(url, timeout=60, headers=headers, stream=True)
         response.encoding = 'utf-8'
-        return HttpResponse(response.text, content_type='text/plain; charset=utf-8')
+
+        # Only read first 500KB to avoid Render's request timeout
+        content = ''
+        size = 0
+        for chunk in response.iter_content(chunk_size=8192, decode_unicode=True):
+            content += chunk
+            size += len(chunk)
+            if size > 500000:
+                break
+
+        return HttpResponse(content, content_type='text/plain; charset=utf-8')
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)

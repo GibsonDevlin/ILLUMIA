@@ -340,7 +340,7 @@
     </style>
 </head>
 
-<body>
+<body data-username="{{ request.user.username }}">
     <div id="head">
         <div id="head1">
             <div id="head-icon">
@@ -435,126 +435,190 @@
 
     <footer><p>&copy; 2026 ILLUMIA LABS. ALL RIGHTS RESERVED.</p></footer>
 
-    <script>
-        // ============================================
-        // READER STATE
-        // ============================================
-        let currentBookKey = null;
-        let currentPage = 1;
-        let totalPages = 1;
+<script>
+    let currentBookKey = null;
+    let currentPage = 1;
+    let totalPages = 1;
+    let bookPages = [];
 
-        async function openReader(bookKey) {
-            currentBookKey = bookKey;
-            currentPage = 1;
-            const modal = document.getElementById('book-reader-modal');
-            const content = document.getElementById('reader-content');
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            content.innerHTML = '<div class="reader-loading">Loading book</div>';
-            await loadPage(1);
-        }
+    async function fetchWithProxy(url) {
+        const res = await fetch(`/accounts/fetch-book-text/?url=${encodeURIComponent(url)}`);
+        if (!res.ok) throw new Error('Failed to fetch book');
+        const text = await res.text();
+        if (!text || text.length < 100) throw new Error('Empty response');
+        return text;
+    }
 
-        async function loadPage(page) {
-            const cleanKey = currentBookKey.startsWith('/') ? currentBookKey.slice(1) : currentBookKey;
-            const content = document.getElementById('reader-content');
+    async function openReader(bookKey) {
+        currentBookKey = bookKey;
+        currentPage = 1;
+        bookPages = [];
 
-            try {
-                const response = await fetch(`/accounts/read-book/${cleanKey}/?page=${page}`);
-                const data = await response.json();
+        const modal = document.getElementById('book-reader-modal');
+        const content = document.getElementById('reader-content');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        content.innerHTML = '<div class="reader-loading">Loading book</div>';
 
-                if (data.error) {
-                    content.innerHTML = `<p style="text-align:center; color:#ff6b6b; padding:60px 0;">${data.error}</p>`;
-                    return;
-                }
+        // Get title from the book card
+        const bookItem = document.querySelector(`[onclick="openReader('${bookKey}')"]`);
+        const card = bookItem ? bookItem.closest('.book-item') : null;
+        const title = card ? card.querySelector('.book-title').textContent.trim() : '';
+        const author = card ? card.querySelector('.book-author').textContent.trim() : '';
 
-                document.getElementById('reader-title').textContent = data.title;
-                document.getElementById('reader-author').textContent = data.author;
+        document.getElementById('reader-title').textContent = title;
+        document.getElementById('reader-author').textContent = author;
 
-                currentPage = data.page;
-                totalPages = data.total_pages;
+        try {
+            // Call Gutendex directly from browser — same as category page
+            const searchRes = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(title)}`);
+            const searchData = await searchRes.json();
+            const results = searchData.results || [];
 
-                document.getElementById('reader-page-info').textContent = `Page ${currentPage} of ${totalPages}`;
-                document.getElementById('reader-progress-bar').style.width = ((currentPage / totalPages) * 100) + '%';
-                document.getElementById('reader-watermark').textContent = data.username || '';
-
-                // Format paragraphs
-                const paragraphs = data.content
-                    .split(/\n\n+/)
-                    .filter(p => p.trim().length > 0)
-                    .map(p => `<p>${p.replace(/\n/g, ' ').trim()}</p>`)
-                    .join('');
-
-                content.innerHTML = paragraphs;
-                content.scrollTop = 0;
-
-            } catch (error) {
-                content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:60px 0;">Could not load this page. Please try again.</p>';
-                console.error('Reader error:', error);
-            }
-        }
-
-        async function changePage(direction) {
-            const newPage = currentPage + direction;
-            if (newPage < 1 || newPage > totalPages) return;
-            await loadPage(newPage);
-        }
-
-        async function jumpToPage() {
-            const input = document.getElementById('page-jump-input');
-            const pageNum = parseInt(input.value);
-            if (!pageNum || pageNum < 1 || pageNum > totalPages) {
-                input.style.borderColor = '#ff007f';
-                setTimeout(() => input.style.borderColor = 'rgba(0,240,255,0.2)', 1000);
+            if (!results.length) {
+                content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:60px 0;">This book is not available for reading.</p>';
                 return;
             }
-            input.value = '';
-            await loadPage(pageNum);
-        }
 
-        function closeReader() {
-            document.getElementById('book-reader-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-            currentBookKey = null;
-            currentPage = 1;
-        }
+            const formats = results[0].formats || {};
+            let textUrl = null;
 
-        // Close reader on backdrop click
-        document.getElementById('book-reader-modal').addEventListener('click', function(e) {
-            if (e.target === this) closeReader();
-        });
-
-        // ============================================
-        // REMOVE BOOK
-        // ============================================
-        let activePurgeKey = null;
-        const confirmModal = document.getElementById('custom-confirm-modal');
-
-        function removeBook(bookKey) {
-            activePurgeKey = bookKey;
-            confirmModal.classList.add('active');
-        }
-
-        document.getElementById('confirm-cancel').addEventListener('click', () => {
-            confirmModal.classList.remove('active');
-            activePurgeKey = null;
-        });
-
-        document.getElementById('confirm-accept').addEventListener('click', async () => {
-            if (activePurgeKey) {
-                const cleanKey = activePurgeKey.startsWith('/') ? activePurgeKey.slice(1) : activePurgeKey;
-                try {
-                    await fetch(`/accounts/remove-download/${cleanKey}/`, {
-                        method: 'GET',
-                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                    });
-                    location.reload();
-                } catch (error) {
-                    console.error('Could not remove download:', error);
+            for (const [key, url] of Object.entries(formats)) {
+                if (key.includes('text/plain') && key.toLowerCase().includes('utf-8')) { textUrl = url; break; }
+            }
+            if (!textUrl) {
+                for (const [key, url] of Object.entries(formats)) {
+                    if (key.includes('text/plain')) { textUrl = url; break; }
                 }
             }
-            confirmModal.classList.remove('active');
-            activePurgeKey = null;
-        });
-    </script>
+
+            if (!textUrl) {
+                content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:60px 0;">No readable text version found.</p>';
+                return;
+            }
+
+            content.innerHTML = '<div class="reader-loading">Fetching book content</div>';
+
+            let bookText = await fetchWithProxy(textUrl);
+
+            const startMarkers = ['*** START OF THE PROJECT', '*** START OF THIS PROJECT', '***START OF THE PROJECT'];
+            const endMarkers = ['*** END OF THE PROJECT', '*** END OF THIS PROJECT', '***END OF THE PROJECT'];
+
+            for (const marker of startMarkers) {
+                const idx = bookText.indexOf(marker);
+                if (idx !== -1) { bookText = bookText.slice(bookText.indexOf('\n', idx) + 1); break; }
+            }
+            for (const marker of endMarkers) {
+                const idx = bookText.indexOf(marker);
+                if (idx !== -1) { bookText = bookText.slice(0, idx); break; }
+            }
+
+            bookText = bookText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            let paragraphs = bookText.split('\n\n').map(p => p.trim()).filter(p => p.length > 0);
+
+            if (paragraphs.length < 5) {
+                const lines = bookText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                paragraphs = [];
+                for (let i = 0; i < lines.length; i += 6) {
+                    const chunk = lines.slice(i, i + 6).join(' ');
+                    if (chunk) paragraphs.push(chunk);
+                }
+            }
+
+            bookPages = [];
+            for (let i = 0; i < paragraphs.length; i += 8) {
+                bookPages.push(paragraphs.slice(i, i + 8).join('\n\n'));
+            }
+
+            if (!bookPages.length) bookPages = ['No content available.'];
+            totalPages = bookPages.length;
+            renderPage(1);
+
+        } catch (error) {
+            content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:60px 0;">Could not load book. Please try again.</p>';
+            console.error('Reader error:', error);
+        }
+    }
+
+    function renderPage(page) {
+        currentPage = page;
+        const content = document.getElementById('reader-content');
+        const pageContent = bookPages[page - 1] || '';
+
+        content.innerHTML = pageContent
+            .split(/\n\n+/)
+            .filter(p => p.trim().length > 0)
+            .map(p => `<p>${p.replace(/\n/g, ' ').trim()}</p>`)
+            .join('');
+        content.scrollTop = 0;
+
+        document.getElementById('reader-page-info').textContent = `Page ${currentPage} of ${totalPages}`;
+        document.getElementById('reader-progress-bar').style.width = `${(currentPage / totalPages) * 100}%`;
+        document.getElementById('reader-watermark').textContent = document.body.getAttribute('data-username') || '';
+    }
+
+    async function changePage(direction) {
+        const newPage = currentPage + direction;
+        if (newPage < 1 || newPage > totalPages) return;
+        renderPage(newPage);
+    }
+
+    async function jumpToPage() {
+        const input = document.getElementById('page-jump-input');
+        const pageNum = parseInt(input.value);
+        if (!pageNum || pageNum < 1 || pageNum > totalPages) {
+            input.style.borderColor = '#ff007f';
+            setTimeout(() => input.style.borderColor = 'rgba(0,240,255,0.2)', 1000);
+            return;
+        }
+        input.value = '';
+        renderPage(pageNum);
+    }
+
+    function closeReader() {
+        document.getElementById('book-reader-modal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+        currentBookKey = null;
+        currentPage = 1;
+        bookPages = [];
+    }
+
+    document.getElementById('book-reader-modal').addEventListener('click', function(e) {
+        if (e.target === this) closeReader();
+    });
+
+    // ============================================
+    // REMOVE BOOK
+    // ============================================
+    let activePurgeKey = null;
+    const confirmModal = document.getElementById('custom-confirm-modal');
+
+    function removeBook(bookKey) {
+        activePurgeKey = bookKey;
+        confirmModal.classList.add('active');
+    }
+
+    document.getElementById('confirm-cancel').addEventListener('click', () => {
+        confirmModal.classList.remove('active');
+        activePurgeKey = null;
+    });
+
+    document.getElementById('confirm-accept').addEventListener('click', async () => {
+        if (activePurgeKey) {
+            const cleanKey = activePurgeKey.startsWith('/') ? activePurgeKey.slice(1) : activePurgeKey;
+            try {
+                await fetch(`/accounts/remove-download/${cleanKey}/`, {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                location.reload();
+            } catch (error) {
+                console.error('Could not remove download:', error);
+            }
+        }
+        confirmModal.classList.remove('active');
+        activePurgeKey = null;
+    });
+</script>
 </body>
 </html>

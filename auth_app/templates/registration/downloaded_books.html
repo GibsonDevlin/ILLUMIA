@@ -107,9 +107,74 @@
             text-transform: uppercase; letter-spacing: 1px;
             background: linear-gradient(135deg, #ffffff 0%, var(--text-secondary) 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 35px; display: flex; align-items: center; gap: 12px;
+            margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
         }
         #downloaded-books-title::after { content: ''; flex-grow: 1; height: 1px; background: linear-gradient(90deg, var(--glass-border), transparent); margin-left: 15px; }
+
+        /* Offline status banner */
+        #offline-banner {
+            display: none;
+            background: rgba(255, 0, 127, 0.08);
+            border: 1px solid rgba(255, 0, 127, 0.3);
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--cyber-neon-pink);
+            letter-spacing: 0.5px;
+        }
+        #offline-banner.show { display: flex; align-items: center; gap: 8px; }
+
+        /* Cache status badge on each book */
+        .cache-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            border-radius: 3px;
+            margin-bottom: 8px;
+        }
+        .cache-badge.cached {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            color: #00ff88;
+        }
+        .cache-badge.not-cached {
+            background: rgba(255, 200, 0, 0.08);
+            border: 1px solid rgba(255, 200, 0, 0.25);
+            color: #ffc800;
+        }
+        .cache-badge.caching {
+            background: rgba(0, 240, 255, 0.08);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            color: var(--cyber-cyan);
+        }
+
+        /* Cache all button */
+        #cache-all-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 28px;
+            padding: 10px 20px;
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.25);
+            color: var(--cyber-cyan);
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #cache-all-btn:hover { background: rgba(0,240,255,0.12); border-color: var(--cyber-cyan); }
+        #cache-all-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .books-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 28px; }
 
@@ -126,17 +191,21 @@
         .book-item:hover .book-cover img { transform: scale(1.04); }
 
         .book-title { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.3; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 42px; }
-        .book-author { font-size: 12px; color: var(--cyber-cyan); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .book-author { font-size: 12px; color: var(--cyber-cyan); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .book-meta { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; margin-bottom: 14px; font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.5px; }
         .meta-date { display: flex; align-items: center; gap: 4px; }
 
-        .book-actions { display: grid; grid-template-columns: 1fr 36px; gap: 10px; margin-top: auto; }
+        .book-actions { display: grid; grid-template-columns: 1fr 36px 36px; gap: 8px; margin-top: auto; }
 
         .book-btn { border: none; border-radius: 4px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; cursor: pointer; height: 36px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s var(--spring-physics); }
 
         .btn-read { background: linear-gradient(135deg, rgba(0,240,255,0.03) 0%, rgba(0,240,255,0.12) 100%); border: 1px solid rgba(0,240,255,0.3); color: #fff; }
         .btn-read:hover { background: var(--cyber-cyan); color: #040609; box-shadow: 0 0 15px rgba(0,240,255,0.4); border-color: var(--cyber-cyan); }
+
+        .btn-cache { background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.2); color: #00ff88; font-size: 16px; }
+        .btn-cache:hover { background: rgba(0,255,136,0.15); border-color: #00ff88; }
+        .btn-cache:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .btn-remove { background: rgba(255,0,127,0.03); border: 1px solid rgba(255,0,127,0.2); color: var(--cyber-neon-pink); }
         .btn-remove:hover { background: var(--cyber-neon-pink); color: #fff; box-shadow: 0 0 15px rgba(255,0,127,0.4); border-color: var(--cyber-neon-pink); }
@@ -151,9 +220,6 @@
         .quick-modal-content { background: #0a0f18; border: 1px solid rgba(255,0,127,0.3); box-shadow: 0 0 30px rgba(255,0,127,0.15); border-radius: 6px; width: 90%; max-width: 380px; padding: 24px; transform: scale(0.95); transition: transform 0.25s var(--spring-physics); }
         .quick-modal.active .quick-modal-content { transform: scale(1); }
 
-        /* ============================================ */
-        /* BOOK READER MODAL                           */
-        /* ============================================ */
         #book-reader-modal {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.92);
@@ -187,33 +253,18 @@
             flex-shrink: 0;
         }
 
-        .reader-book-title {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--cyber-cyan);
-            letter-spacing: 0.5px;
-            margin-bottom: 3px;
-        }
-
-        .reader-book-author {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .reader-book-title { font-family: 'Orbitron', sans-serif; font-size: 14px; font-weight: 700; color: var(--cyber-cyan); letter-spacing: 0.5px; margin-bottom: 3px; }
+        .reader-book-author { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .reader-source-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 2px 8px; border-radius: 3px; margin-top: 4px; display: inline-block; }
+        .reader-source-badge.offline { background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3); color: #00ff88; }
+        .reader-source-badge.online { background: rgba(0,240,255,0.08); border: 1px solid rgba(0,240,255,0.2); color: var(--cyber-cyan); }
 
         .reader-close-btn {
-            background: rgba(255,0,127,0.08);
-            border: 1px solid rgba(255,0,127,0.25);
-            color: var(--cyber-neon-pink);
-            width: 34px; height: 34px;
-            border-radius: 50%;
-            font-size: 16px;
-            cursor: pointer;
+            background: rgba(255,0,127,0.08); border: 1px solid rgba(255,0,127,0.25);
+            color: var(--cyber-neon-pink); width: 34px; height: 34px;
+            border-radius: 50%; font-size: 16px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            transition: all 0.2s;
-            flex-shrink: 0;
+            transition: all 0.2s; flex-shrink: 0;
         }
         .reader-close-btn:hover { background: var(--cyber-neon-pink); color: #fff; }
 
@@ -221,122 +272,65 @@
         .reader-progress-bar { height: 100%; background: linear-gradient(90deg, var(--cyber-cyan), #00b4d8); border-radius: 0 2px 2px 0; transition: width 0.4s ease; width: 0%; }
 
         #reader-content {
-            flex: 1;
-            overflow-y: auto;
+            flex: 1; overflow-y: auto;
             padding: 44px 60px;
             font-family: 'Georgia', 'Times New Roman', serif;
-            font-size: 17px;
-            line-height: 2;
-            color: #c8d8e8;
-            letter-spacing: 0.3px;
-            scroll-behavior: smooth;
+            font-size: 17px; line-height: 2; color: #c8d8e8;
+            letter-spacing: 0.3px; scroll-behavior: smooth;
         }
-
         #reader-content::-webkit-scrollbar { width: 6px; }
         #reader-content::-webkit-scrollbar-track { background: transparent; }
         #reader-content::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.2); border-radius: 3px; }
-
-        #reader-content p {
-            margin-bottom: 1.6em;
-            text-align: justify;
-        }
-
-        #reader-content p:first-child::first-letter {
-            font-size: 3.4em;
-            font-weight: 700;
-            float: left;
-            line-height: 0.75;
-            margin-right: 8px;
-            margin-top: 4px;
-            color: var(--cyber-cyan);
-        }
+        #reader-content p { margin-bottom: 1.6em; text-align: justify; }
+        #reader-content p:first-child::first-letter { font-size: 3.4em; font-weight: 700; float: left; line-height: 0.75; margin-right: 8px; margin-top: 4px; color: var(--cyber-cyan); }
 
         .reader-footer {
             padding: 14px 26px;
             border-top: 1px solid rgba(0,240,255,0.08);
             background: rgba(0,240,255,0.02);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            flex-shrink: 0;
+            display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 10px; flex-shrink: 0;
         }
 
         .reader-page-info { font-size: 12px; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
-
         .reader-nav { display: flex; gap: 8px; align-items: center; }
-
-        .reader-nav-btn {
-            background: rgba(0,240,255,0.05);
-            border: 1px solid rgba(0,240,255,0.2);
-            color: var(--text-secondary);
-            padding: 7px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-        }
+        .reader-nav-btn { background: rgba(0,240,255,0.05); border: 1px solid rgba(0,240,255,0.2); color: var(--text-secondary); padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; }
         .reader-nav-btn:hover { background: rgba(0,240,255,0.12); border-color: var(--cyber-cyan); color: var(--cyber-cyan); }
         .reader-nav-btn.primary { background: linear-gradient(135deg, var(--cyber-cyan), #00b4d8); border: none; color: #040609; }
         .reader-nav-btn.primary:hover { opacity: 0.88; }
-
         .reader-jump { display: flex; align-items: center; gap: 6px; }
-        .reader-jump input {
-            width: 60px; padding: 6px 8px;
-            border-radius: 6px; border: 1px solid rgba(0,240,255,0.2);
-            background: rgba(0,240,255,0.05); color: var(--text-primary);
-            font-size: 12px; text-align: center; outline: none;
-        }
+        .reader-jump input { width: 60px; padding: 6px 8px; border-radius: 6px; border: 1px solid rgba(0,240,255,0.2); background: rgba(0,240,255,0.05); color: var(--text-primary); font-size: 12px; text-align: center; outline: none; }
         .reader-jump input:focus { border-color: var(--cyber-cyan); }
-        .reader-jump button {
-            background: transparent; border: 1px solid rgba(0,240,255,0.2);
-            color: var(--cyber-cyan); padding: 6px 10px; border-radius: 6px;
-            cursor: pointer; font-size: 11px; font-weight: 700;
-            text-transform: uppercase; transition: all 0.2s;
-        }
+        .reader-jump button { background: transparent; border: 1px solid rgba(0,240,255,0.2); color: var(--cyber-cyan); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; transition: all 0.2s; }
         .reader-jump button:hover { background: rgba(0,240,255,0.1); }
-
         .reader-watermark { font-size: 10px; color: var(--text-muted); opacity: 0.4; font-family: monospace; letter-spacing: 1px; }
-
         .reader-loading { text-align: center; padding: 60px 20px; color: var(--text-muted); font-size: 14px; }
         .reader-loading::after { content: ''; display: inline-block; width: 20px; height: 20px; border: 2px solid rgba(0,240,255,0.2); border-top-color: var(--cyber-cyan); border-radius: 50%; animation: spin 0.8s linear infinite; margin-left: 10px; vertical-align: middle; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         footer { padding: 24px 40px; text-align: center; color: var(--text-muted); font-size: 12px; font-weight: 600; letter-spacing: 1px; border-top: 1px solid var(--glass-border); margin-top: auto; }
-    
-/* ===== Responsive ===== */
-@media (max-width:1024px){
-  #head{ padding:0 20px; }
-  .downloaded-books-container{ padding-left:20px; padding-right:20px; }
-}
-@media (max-width:768px){
-  #head{ height:auto; flex-direction:column; align-items:stretch; gap:10px; padding:12px 16px; }
-  #head1, #head2{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
-  #head-icon{ font-size:17px; letter-spacing:1px; }
-  .downloaded-books-container{ padding:20px 16px; }
-  .books-container{ grid-template-columns:1fr !important; gap:14px; }
-  .book-item{ flex-direction:column; align-items:stretch; }
-  .book-cover{ width:100%; height:auto; max-height:180px; object-fit:cover; }
-  .book-title{ font-size:15px; word-break:break-word; }
-  .book-actions{ display:flex; flex-wrap:wrap; gap:8px; }
-  .book-btn{ flex:1 1 120px; text-align:center; }
-  .reader-container{ width:100% !important; height:100% !important; max-width:100%; max-height:100%; border-radius:0; }
-  .reader-header{ flex-wrap:wrap; gap:8px; padding:12px 14px; }
-  .reader-book-title{ font-size:14px; }
-  .reader-footer, .reader-nav{ flex-wrap:wrap; gap:8px; justify-content:center; }
-  .reader-nav-btn{ flex:1 1 110px; }
-  .reader-jump{ width:100%; justify-content:center; }
-  .quick-modal-content{ width:calc(100% - 28px); max-height:82vh; overflow-y:auto; }
-}
-@media (max-width:420px){
-  #head-icon{ font-size:15px; }
-  .empty-state{ padding:32px 16px; }
-}
 
+        @media (max-width:1024px){ #head{ padding:0 20px; } .downloaded-books-container{ padding-left:20px; padding-right:20px; } }
+        @media (max-width:768px){
+            #head{ height:auto; flex-direction:column; align-items:stretch; gap:10px; padding:12px 16px; }
+            #head1, #head2{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+            #head-icon{ font-size:17px; letter-spacing:1px; }
+            .downloaded-books-container{ padding:20px 16px; }
+            .books-container{ grid-template-columns:1fr !important; gap:14px; }
+            .book-item{ flex-direction:column; align-items:stretch; }
+            .book-cover{ width:100%; height:auto; max-height:180px; object-fit:cover; }
+            .book-title{ font-size:15px; word-break:break-word; }
+            .book-actions{ display:flex; flex-wrap:wrap; gap:8px; }
+            .book-btn{ flex:1 1 100px; text-align:center; }
+            .reader-container{ width:100% !important; height:100% !important; max-width:100%; max-height:100%; border-radius:0; }
+            .reader-header{ flex-wrap:wrap; gap:8px; padding:12px 14px; }
+            .reader-book-title{ font-size:14px; }
+            .reader-footer, .reader-nav{ flex-wrap:wrap; gap:8px; justify-content:center; }
+            .reader-nav-btn{ flex:1 1 110px; }
+            .reader-jump{ width:100%; justify-content:center; }
+            .quick-modal-content{ width:calc(100% - 28px); max-height:82vh; overflow-y:auto; }
+        }
+        @media (max-width:420px){ #head-icon{ font-size:15px; } .empty-state{ padding:32px 16px; } }
     </style>
 </head>
 
@@ -358,11 +352,22 @@
         <a href="{% url 'catergory' %}" class="back-button">← Return to Search Base</a>
         <h1 id="downloaded-books-title">Offline Library</h1>
 
+        <!-- Offline warning banner -->
+        <div id="offline-banner">
+            ⚡ You are offline. Only books cached to your device can be read.
+        </div>
+
+        {% if downloads %}
+        <button id="cache-all-btn" onclick="cacheAllBooks()">
+            💾 Cache All Books for Offline Reading
+        </button>
+        {% endif %}
+
         <div id="books-list-container">
             {% if downloads %}
                 <div class="books-container">
                 {% for d in downloads %}
-                    <div class="book-item">
+                    <div class="book-item" id="book-card-{{ d.book.key|slugify }}">
                         <div class="book-cover">
                             {% if d.book.cover_id %}
                                 <img src="https://covers.openlibrary.org/b/id/{{ d.book.cover_id }}-M.jpg" alt="{{ d.book.title }}">
@@ -372,12 +377,22 @@
                         </div>
                         <div class="book-title" title="{{ d.book.title }}">{{ d.book.title }}</div>
                         <div class="book-author">{{ d.book.author|default:"Unknown" }}</div>
+                        <!-- Cache status badge — updated by JS -->
+                        <div class="cache-badge not-cached" id="badge-{{ d.book.key|slugify }}">
+                            ⬇ Not cached
+                        </div>
                         <div class="book-meta">
                             <span class="meta-date">📅 {{ d.downloaded_at|date:"M d, Y" }}</span>
                             <span>{{ d.book.pages|default:"Module" }}</span>
                         </div>
                         <div class="book-actions">
-                            <button class="book-btn btn-read" onclick="openReader('{{ d.book.key }}')">Read</button>
+                            <button class="book-btn btn-read"
+                                onclick="openReader('{{ d.book.key }}', '{{ d.book.title|escapejs }}', '{{ d.book.author|default:"Unknown"|escapejs }}')"
+                            >Read</button>
+                            <button class="book-btn btn-cache" title="Cache for offline"
+                                id="cache-btn-{{ d.book.key|slugify }}"
+                                onclick="cacheBook('{{ d.book.key }}', '{{ d.book.title|escapejs }}', '{{ d.book.author|default:"Unknown"|escapejs }}', this)"
+                            >💾</button>
                             <button class="book-btn btn-remove" onclick="removeBook('{{ d.book.key }}')" title="Clear Module">🗑️</button>
                         </div>
                     </div>
@@ -399,6 +414,7 @@
                 <div>
                     <div id="reader-title" class="reader-book-title"></div>
                     <div id="reader-author" class="reader-book-author"></div>
+                    <div id="reader-source" class="reader-source-badge online">🌐 Online</div>
                 </div>
                 <button class="reader-close-btn" onclick="closeReader()">✕</button>
             </div>
@@ -436,189 +452,382 @@
     <footer><p>&copy; 2026 ILLUMIA LABS. ALL RIGHTS RESERVED.</p></footer>
 
 <script>
-    let currentBookKey = null;
-    let currentPage = 1;
-    let totalPages = 1;
-    let bookPages = [];
+// ============================================================
+// INDEXEDDB SETUP — stores full book text in browser storage
+// ============================================================
+const DB_NAME    = 'IllumiaOfflineDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'books';
+let db = null;
 
-    async function fetchWithProxy(url) {
-        const res = await fetch(`/accounts/fetch-book-text/?url=${encodeURIComponent(url)}`);
-        if (!res.ok) throw new Error('Failed to fetch book');
-        const text = await res.text();
-        if (!text || text.length < 100) throw new Error('Empty response');
-        return text;
+function openDB() {
+    return new Promise((resolve, reject) => {
+        if (db) { resolve(db); return; }
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = e => {
+            const d = e.target.result;
+            if (!d.objectStoreNames.contains(STORE_NAME)) {
+                d.createObjectStore(STORE_NAME, { keyPath: 'bookKey' });
+            }
+        };
+        req.onsuccess = e => { db = e.target.result; resolve(db); };
+        req.onerror   = () => reject(req.error);
+    });
+}
+
+async function saveBookToCache(bookKey, title, author, pages) {
+    const d = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx   = d.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.put({ bookKey, title, author, pages, cachedAt: Date.now() });
+        tx.oncomplete = () => resolve(true);
+        tx.onerror    = () => reject(tx.error);
+    });
+}
+
+async function getBookFromCache(bookKey) {
+    const d = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx    = d.transaction(STORE_NAME, 'readonly');
+        const store = tx.objectStore(STORE_NAME);
+        const req   = store.get(bookKey);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror   = () => reject(req.error);
+    });
+}
+
+async function isBookCached(bookKey) {
+    try {
+        const rec = await getBookFromCache(bookKey);
+        return rec && rec.pages && rec.pages.length > 0;
+    } catch { return false; }
+}
+
+async function removeBookFromCache(bookKey) {
+    const d = await openDB();
+    return new Promise((resolve, reject) => {
+        const tx    = d.transaction(STORE_NAME, 'readwrite');
+        const store = tx.objectStore(STORE_NAME);
+        store.delete(bookKey);
+        tx.oncomplete = () => resolve(true);
+        tx.onerror    = () => reject(tx.error);
+    });
+}
+
+// ============================================================
+// UPDATE CACHE BADGES on page load
+// ============================================================
+async function refreshBadges() {
+    const badges = document.querySelectorAll('[id^="badge-"]');
+    for (const badge of badges) {
+        const slugKey = badge.id.replace('badge-', '');
+        // Find corresponding book key from cache btn
+        const cacheBtn = document.getElementById('cache-btn-' + slugKey);
+        if (!cacheBtn) continue;
+        const bookKey = cacheBtn.getAttribute('onclick').match(/'([^']+)'/)?.[1];
+        if (!bookKey) continue;
+        const cached = await isBookCached(bookKey);
+        setBadge(slugKey, cached ? 'cached' : 'not-cached');
     }
+}
 
-    async function openReader(bookKey) {
-        currentBookKey = bookKey;
-        currentPage = 1;
-        bookPages = [];
+function setBadge(slugKey, state) {
+    const badge    = document.getElementById('badge-'     + slugKey);
+    const cacheBtn = document.getElementById('cache-btn-' + slugKey);
+    if (!badge) return;
+    badge.className = 'cache-badge ' + state;
+    if (state === 'cached') {
+        badge.textContent = '✅ Cached — reads offline';
+        if (cacheBtn) { cacheBtn.textContent = '✅'; cacheBtn.disabled = false; cacheBtn.title = 'Re-cache'; }
+    } else if (state === 'caching') {
+        badge.textContent = '⏳ Caching...';
+        if (cacheBtn) { cacheBtn.disabled = true; cacheBtn.textContent = '⏳'; }
+    } else {
+        badge.textContent = '⬇ Not cached — needs internet';
+        if (cacheBtn) { cacheBtn.disabled = false; cacheBtn.textContent = '💾'; cacheBtn.title = 'Cache for offline'; }
+    }
+}
 
-        const modal = document.getElementById('book-reader-modal');
-        const content = document.getElementById('reader-content');
-        modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        content.innerHTML = '<div class="reader-loading">Loading book</div>';
+// ============================================================
+// FETCH + PARSE BOOK TEXT
+// ============================================================
+async function fetchWithProxy(url) {
+    const res = await fetch(`/accounts/fetch-book-text/?url=${encodeURIComponent(url)}`);
+    if (!res.ok) throw new Error('Proxy fetch failed');
+    const text = await res.text();
+    if (!text || text.length < 100) throw new Error('Empty response');
+    return text;
+}
 
-        // Get title from the book card
-        const bookItem = document.querySelector(`[onclick="openReader('${bookKey}')"]`);
-        const card = bookItem ? bookItem.closest('.book-item') : null;
-        const title = card ? card.querySelector('.book-title').textContent.trim() : '';
-        const author = card ? card.querySelector('.book-author').textContent.trim() : '';
+async function fetchAndParseBook(title) {
+    const searchRes  = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(title)}`);
+    const searchData = await searchRes.json();
+    const results    = searchData.results || [];
+    if (!results.length) throw new Error('Book not found on Gutenberg');
 
-        document.getElementById('reader-title').textContent = title;
-        document.getElementById('reader-author').textContent = author;
+    const formats = results[0].formats || {};
+    let textUrl = null;
+    for (const [k, u] of Object.entries(formats)) {
+        if (k.includes('text/plain') && k.toLowerCase().includes('utf-8')) { textUrl = u; break; }
+    }
+    if (!textUrl) {
+        for (const [k, u] of Object.entries(formats)) {
+            if (k.includes('text/plain')) { textUrl = u; break; }
+        }
+    }
+    if (!textUrl) throw new Error('No plain text version found');
 
-        try {
-            // Call Gutendex directly from browser — same as category page
-            const searchRes = await fetch(`https://gutendex.com/books/?search=${encodeURIComponent(title)}`);
-            const searchData = await searchRes.json();
-            const results = searchData.results || [];
+    let bookText = await fetchWithProxy(textUrl);
 
-            if (!results.length) {
-                content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:60px 0;">This book is not available for reading.</p>';
-                return;
-            }
+    // Strip Gutenberg boilerplate
+    const starts = ['*** START OF THE PROJECT', '*** START OF THIS PROJECT', '***START OF THE PROJECT'];
+    const ends   = ['*** END OF THE PROJECT',   '*** END OF THIS PROJECT',   '***END OF THE PROJECT'];
+    for (const m of starts) { const i = bookText.indexOf(m); if (i !== -1) { bookText = bookText.slice(bookText.indexOf('\n', i) + 1); break; } }
+    for (const m of ends)   { const i = bookText.indexOf(m); if (i !== -1) { bookText = bookText.slice(0, i); break; } }
 
-            const formats = results[0].formats || {};
-            let textUrl = null;
-
-            for (const [key, url] of Object.entries(formats)) {
-                if (key.includes('text/plain') && key.toLowerCase().includes('utf-8')) { textUrl = url; break; }
-            }
-            if (!textUrl) {
-                for (const [key, url] of Object.entries(formats)) {
-                    if (key.includes('text/plain')) { textUrl = url; break; }
-                }
-            }
-
-            if (!textUrl) {
-                content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:60px 0;">No readable text version found.</p>';
-                return;
-            }
-
-            content.innerHTML = '<div class="reader-loading">Fetching book content</div>';
-
-            let bookText = await fetchWithProxy(textUrl);
-
-            const startMarkers = ['*** START OF THE PROJECT', '*** START OF THIS PROJECT', '***START OF THE PROJECT'];
-            const endMarkers = ['*** END OF THE PROJECT', '*** END OF THIS PROJECT', '***END OF THE PROJECT'];
-
-            for (const marker of startMarkers) {
-                const idx = bookText.indexOf(marker);
-                if (idx !== -1) { bookText = bookText.slice(bookText.indexOf('\n', idx) + 1); break; }
-            }
-            for (const marker of endMarkers) {
-                const idx = bookText.indexOf(marker);
-                if (idx !== -1) { bookText = bookText.slice(0, idx); break; }
-            }
-
-            bookText = bookText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-            let paragraphs = bookText.split('\n\n').map(p => p.trim()).filter(p => p.length > 0);
-
-            if (paragraphs.length < 5) {
-                const lines = bookText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-                paragraphs = [];
-                for (let i = 0; i < lines.length; i += 6) {
-                    const chunk = lines.slice(i, i + 6).join(' ');
-                    if (chunk) paragraphs.push(chunk);
-                }
-            }
-
-            bookPages = [];
-            for (let i = 0; i < paragraphs.length; i += 8) {
-                bookPages.push(paragraphs.slice(i, i + 8).join('\n\n'));
-            }
-
-            if (!bookPages.length) bookPages = ['No content available.'];
-            totalPages = bookPages.length;
-            renderPage(1);
-
-        } catch (error) {
-            content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:60px 0;">Could not load book. Please try again.</p>';
-            console.error('Reader error:', error);
+    bookText = bookText.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    let paragraphs = bookText.split('\n\n').map(p => p.trim()).filter(p => p.length > 0);
+    if (paragraphs.length < 5) {
+        const lines = bookText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        paragraphs = [];
+        for (let i = 0; i < lines.length; i += 6) {
+            const chunk = lines.slice(i, i + 6).join(' ');
+            if (chunk) paragraphs.push(chunk);
         }
     }
 
-    function renderPage(page) {
-        currentPage = page;
-        const content = document.getElementById('reader-content');
-        const pageContent = bookPages[page - 1] || '';
+    const pages = [];
+    for (let i = 0; i < paragraphs.length; i += 8) {
+        pages.push(paragraphs.slice(i, i + 8).join('\n\n'));
+    }
+    if (!pages.length) pages.push('No content available.');
+    return pages;
+}
 
-        content.innerHTML = pageContent
-            .split(/\n\n+/)
-            .filter(p => p.trim().length > 0)
-            .map(p => `<p>${p.replace(/\n/g, ' ').trim()}</p>`)
-            .join('');
-        content.scrollTop = 0;
+// ============================================================
+// CACHE A SINGLE BOOK
+// ============================================================
+async function cacheBook(bookKey, title, author, btn) {
+    const slugKey = btn.id.replace('cache-btn-', '');
+    setBadge(slugKey, 'caching');
+    try {
+        const pages = await fetchAndParseBook(title);
+        await saveBookToCache(bookKey, title, author, pages);
+        setBadge(slugKey, 'cached');
+    } catch (err) {
+        console.error('Cache failed:', err);
+        setBadge(slugKey, 'not-cached');
+        alert('Could not cache this book. Make sure you are online and try again.');
+    }
+}
 
-        document.getElementById('reader-page-info').textContent = `Page ${currentPage} of ${totalPages}`;
-        document.getElementById('reader-progress-bar').style.width = `${(currentPage / totalPages) * 100}%`;
-        document.getElementById('reader-watermark').textContent = document.body.getAttribute('data-username') || '';
+// ============================================================
+// CACHE ALL BOOKS
+// ============================================================
+async function cacheAllBooks() {
+    const btn = document.getElementById('cache-all-btn');
+    btn.disabled = true;
+    btn.textContent = '⏳ Caching all books...';
+
+    const cacheBtns = document.querySelectorAll('[id^="cache-btn-"]');
+    for (const cacheBtn of cacheBtns) {
+        const match = cacheBtn.getAttribute('onclick').match(/'([^']+)',\s*'([^']+)',\s*'([^']+)'/);
+        if (!match) continue;
+        const [, bookKey, title, author] = match;
+        const slugKey = cacheBtn.id.replace('cache-btn-', '');
+        const already = await isBookCached(bookKey);
+        if (already) continue;
+        setBadge(slugKey, 'caching');
+        try {
+            const pages = await fetchAndParseBook(title);
+            await saveBookToCache(bookKey, title, author, pages);
+            setBadge(slugKey, 'cached');
+        } catch (err) {
+            console.error('Failed to cache:', title, err);
+            setBadge(slugKey, 'not-cached');
+        }
+        // Small delay to avoid rate limiting
+        await new Promise(r => setTimeout(r, 800));
     }
 
-    async function changePage(direction) {
-        const newPage = currentPage + direction;
-        if (newPage < 1 || newPage > totalPages) return;
-        renderPage(newPage);
-    }
+    btn.disabled = false;
+    btn.textContent = '💾 Cache All Books for Offline Reading';
+}
 
-    async function jumpToPage() {
-        const input = document.getElementById('page-jump-input');
-        const pageNum = parseInt(input.value);
-        if (!pageNum || pageNum < 1 || pageNum > totalPages) {
-            input.style.borderColor = '#ff007f';
-            setTimeout(() => input.style.borderColor = 'rgba(0,240,255,0.2)', 1000);
+// ============================================================
+// READER STATE
+// ============================================================
+let currentBookKey = null;
+let currentPage    = 1;
+let totalPages     = 1;
+let bookPages      = [];
+
+async function openReader(bookKey, title, author) {
+    currentBookKey = bookKey;
+    currentPage    = 1;
+    bookPages      = [];
+
+    const modal   = document.getElementById('book-reader-modal');
+    const content = document.getElementById('reader-content');
+    const source  = document.getElementById('reader-source');
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    content.innerHTML = '<div class="reader-loading">Loading book</div>';
+
+    document.getElementById('reader-title').textContent  = title;
+    document.getElementById('reader-author').textContent = author;
+
+    // ── Step 1: Try IndexedDB (offline cache) first ──
+    try {
+        const cached = await getBookFromCache(bookKey);
+        if (cached && cached.pages && cached.pages.length > 0) {
+            bookPages  = cached.pages;
+            totalPages = bookPages.length;
+            source.textContent = '📴 Offline — reading from device';
+            source.className   = 'reader-source-badge offline';
+            renderPage(1);
             return;
         }
-        input.value = '';
-        renderPage(pageNum);
+    } catch (e) { /* IndexedDB unavailable — fall through to online */ }
+
+    // ── Step 2: Not cached — fetch online ──
+    if (!navigator.onLine) {
+        content.innerHTML = `
+            <div style="text-align:center; padding:60px 20px;">
+                <p style="color:#ff6b6b; font-size:16px; margin-bottom:12px;">📴 You are offline</p>
+                <p style="color:var(--text-muted); font-size:13px;">This book has not been cached to your device yet.<br>Connect to the internet and tap 💾 to cache it first.</p>
+            </div>`;
+        source.textContent = '📴 Offline';
+        source.className   = 'reader-source-badge offline';
+        return;
     }
 
-    function closeReader() {
-        document.getElementById('book-reader-modal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-        currentBookKey = null;
-        currentPage = 1;
-        bookPages = [];
+    source.textContent = '🌐 Online';
+    source.className   = 'reader-source-badge online';
+    content.innerHTML  = '<div class="reader-loading">Fetching book content</div>';
+
+    try {
+        bookPages  = await fetchAndParseBook(title);
+        totalPages = bookPages.length;
+        renderPage(1);
+
+        // Auto-save to cache after successful online load
+        saveBookToCache(bookKey, title, author, bookPages).then(() => {
+            const slugKey = bookKey.replace(/\//g, '-').replace(/^-/, '');
+            setBadge(slugKey, 'cached');
+        }).catch(() => {});
+
+    } catch (error) {
+        content.innerHTML = '<p style="text-align:center; color:#ff6b6b; padding:60px 0;">Could not load book. Please try again.</p>';
+        console.error('Reader error:', error);
     }
+}
 
-    document.getElementById('book-reader-modal').addEventListener('click', function(e) {
-        if (e.target === this) closeReader();
-    });
+function renderPage(page) {
+    currentPage = page;
+    const content     = document.getElementById('reader-content');
+    const pageContent = bookPages[page - 1] || '';
 
-    // ============================================
-    // REMOVE BOOK
-    // ============================================
-    let activePurgeKey = null;
-    const confirmModal = document.getElementById('custom-confirm-modal');
+    content.innerHTML = pageContent
+        .split(/\n\n+/)
+        .filter(p => p.trim().length > 0)
+        .map(p => `<p>${p.replace(/\n/g, ' ').trim()}</p>`)
+        .join('');
+    content.scrollTop = 0;
 
-    function removeBook(bookKey) {
-        activePurgeKey = bookKey;
-        confirmModal.classList.add('active');
+    document.getElementById('reader-page-info').textContent   = `Page ${currentPage} of ${totalPages}`;
+    document.getElementById('reader-progress-bar').style.width = `${(currentPage / totalPages) * 100}%`;
+    document.getElementById('reader-watermark').textContent    = document.body.getAttribute('data-username') || '';
+}
+
+function changePage(direction) {
+    const newPage = currentPage + direction;
+    if (newPage < 1 || newPage > totalPages) return;
+    renderPage(newPage);
+}
+
+function jumpToPage() {
+    const input   = document.getElementById('page-jump-input');
+    const pageNum = parseInt(input.value);
+    if (!pageNum || pageNum < 1 || pageNum > totalPages) {
+        input.style.borderColor = '#ff007f';
+        setTimeout(() => input.style.borderColor = 'rgba(0,240,255,0.2)', 1000);
+        return;
     }
+    input.value = '';
+    renderPage(pageNum);
+}
 
-    document.getElementById('confirm-cancel').addEventListener('click', () => {
-        confirmModal.classList.remove('active');
-        activePurgeKey = null;
-    });
+function closeReader() {
+    document.getElementById('book-reader-modal').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    currentBookKey = null;
+    currentPage    = 1;
+    bookPages      = [];
+}
 
-    document.getElementById('confirm-accept').addEventListener('click', async () => {
-        if (activePurgeKey) {
-            const cleanKey = activePurgeKey.startsWith('/') ? activePurgeKey.slice(1) : activePurgeKey;
-            try {
-                await fetch(`/accounts/remove-download/${cleanKey}/`, {
-                    method: 'GET',
-                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-                });
-                location.reload();
-            } catch (error) {
-                console.error('Could not remove download:', error);
-            }
+document.getElementById('book-reader-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeReader();
+});
+
+// ============================================================
+// REMOVE BOOK
+// ============================================================
+let activePurgeKey  = null;
+const confirmModal  = document.getElementById('custom-confirm-modal');
+
+function removeBook(bookKey) {
+    activePurgeKey = bookKey;
+    confirmModal.classList.add('active');
+}
+
+document.getElementById('confirm-cancel').addEventListener('click', () => {
+    confirmModal.classList.remove('active');
+    activePurgeKey = null;
+});
+
+document.getElementById('confirm-accept').addEventListener('click', async () => {
+    if (activePurgeKey) {
+        const cleanKey = activePurgeKey.startsWith('/') ? activePurgeKey.slice(1) : activePurgeKey;
+        try {
+            // Remove from server
+            await fetch(`/accounts/remove-download/${cleanKey}/`, {
+                method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            // Also remove from IndexedDB
+            await removeBookFromCache(activePurgeKey).catch(() => {});
+            location.reload();
+        } catch (error) {
+            console.error('Could not remove download:', error);
         }
-        confirmModal.classList.remove('active');
-        activePurgeKey = null;
-    });
+    }
+    confirmModal.classList.remove('active');
+    activePurgeKey = null;
+});
+
+// ============================================================
+// OFFLINE DETECTION
+// ============================================================
+function updateOnlineStatus() {
+    const banner = document.getElementById('offline-banner');
+    if (!navigator.onLine) {
+        banner.classList.add('show');
+    } else {
+        banner.classList.remove('show');
+    }
+}
+window.addEventListener('online',  updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// ============================================================
+// BOOT — refresh badges on page load
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+    refreshBadges();
+});
 </script>
 </body>
 </html>

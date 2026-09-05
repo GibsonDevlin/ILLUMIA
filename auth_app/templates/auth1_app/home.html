@@ -456,9 +456,9 @@
 
         .rec-grid {
             display: grid;
-            grid-template-columns: repeat(6, minmax(0, 1fr));
-            gap: 14px;
-        }
+            grid-template-columns: repeat(6, minmax(100px, 1fr));
+            gap: 16px;
+         }
 
         /* Large desktop / small laptop */
         @media (max-width: 1024px) {
@@ -467,7 +467,7 @@
             .nav-links { gap: 18px; }
             h1 { font-size: 52px; }
             main { padding: 60px 18px; }
-            .rec-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+           .rec-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
         }
 
         /* Tablet */

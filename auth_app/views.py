@@ -261,7 +261,7 @@ class catergoryView(LoginRequiredMixin, View):
             
         # If there's a search query, fetch matching books from OpenLibrary
         if search_query:
-            matched = fetch_books_from_api(search_query, 40)
+            matched = fetch_books_from_api(search_query, 20)
             if matched:
                 search_results = {search_query: matched}
             else:
@@ -271,17 +271,13 @@ class catergoryView(LoginRequiredMixin, View):
             # This replaces the mock category list with real ebooks
             default_categories = [
                 'Science Fiction',
-                'Mystery & Thriller',
-                'Business & Economics',
                 'History',
                 'Self-Help',
-                'Science',
-                'Biography',
                 'Technology'
             ]
             
             for category in default_categories:
-                books = fetch_books_from_api(category, 15)
+                books = fetch_books_from_api(category, 8)
                 if books:
                     search_results[category] = books
 

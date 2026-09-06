@@ -26,6 +26,7 @@ import requests
 import numpy as np
 import nltk
 import os
+import re
 
 # Ensure NLTK data is available on Render
 _nltk_data_path = '/opt/render/nltk_data'
@@ -84,14 +85,9 @@ def home_view(request):
     bookmark_count = Bookmark.objects.filter(user=request.user).count()
     recent_books = RecentlyViewed.objects.filter(user=request.user).select_related('book')[:3]
 
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    from sklearn.metrics.pairwise import cosine_similarity
-    import numpy as np
-
     recommendations = []
     try:
         all_books = Book.objects.exclude(description='').exclude(description=None)
-
         if all_books.count() >= 3:
             favourite_keys = list(Favourite.objects.filter(user=request.user).values_list('book__key', flat=True))
             bookmark_keys = list(Bookmark.objects.filter(user=request.user).values_list('book__key', flat=True))
@@ -101,16 +97,12 @@ def home_view(request):
             if interacted_keys:
                 book_list = list(all_books)
                 descriptions = [b.title + ' ' + b.description for b in book_list]
-
                 vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
                 tfidf_matrix = vectorizer.fit_transform(descriptions)
-
                 interacted_indices = [i for i, b in enumerate(book_list) if b.key in interacted_keys]
-
                 if interacted_indices:
                     user_profile = np.mean(tfidf_matrix[interacted_indices].toarray(), axis=0).reshape(1, -1)
                     similarity_scores = cosine_similarity(user_profile, tfidf_matrix)[0]
-
                     scored_books = [
                         (score, book_list[i])
                         for i, score in enumerate(similarity_scores)
@@ -370,9 +362,9 @@ def read_book(request, book_key):
             try:
                 response = requests.get(search_url, timeout=15, headers=headers)
             except requests.exceptions.Timeout:
-                return JsonResponse({'error': 'Book source is taking too long. Please try again in a moment.'}, status=503)
+                return JsonResponse({'error': 'Book source is taking too long. Please try again.'}, status=503)
 
-            if not response or not response.text.strip():
+            if not response or response.status_code != 200 or not response.text.strip():
                 return JsonResponse({'error': 'Could not reach book source. Please try again.'}, status=503)
 
             data = response.json()
@@ -435,10 +427,9 @@ def read_book(request, book_key):
                     if chunk:
                         paragraphs.append(chunk)
 
-            paragraphs_per_page = 8
             pages = []
-            for i in range(0, len(paragraphs), paragraphs_per_page):
-                chunk = paragraphs[i:i + paragraphs_per_page]
+            for i in range(0, len(paragraphs), 8):
+                chunk = paragraphs[i:i + 8]
                 pages.append('\n\n'.join(chunk))
 
             if not pages:
@@ -485,7 +476,6 @@ def rate_book(request, book_key):
             user=request.user, book=book,
             defaults={'stars': stars, 'review': review}
         )
-        from django.db.models import Avg
         avg = Rating.objects.filter(book=book).aggregate(Avg('stars'))['stars__avg']
         avg_rating = round(avg, 1) if avg else stars
         total_ratings = Rating.objects.filter(book=book).count()
@@ -504,7 +494,6 @@ def get_book_ratings(request, book_key):
     book = Book.objects.filter(key=book_key).first()
     if not book:
         return JsonResponse({'error': 'Book not found'}, status=404)
-    from django.db.models import Avg
     ratings = Rating.objects.filter(book=book).select_related('user').order_by('-created_at')
     avg = Rating.objects.filter(book=book).aggregate(Avg('stars'))['stars__avg']
     user_rating = Rating.objects.filter(user=request.user, book=book).first()
@@ -525,7 +514,7 @@ def get_book_ratings(request, book_key):
 def get_recommendations(request):
     all_books = Book.objects.exclude(description='').exclude(description=None)
     if all_books.count() < 3:
-        return JsonResponse({'recommendations': [], 'message': 'Not enough books in the library yet. Please search for more.'})
+        return JsonResponse({'recommendations': [], 'message': 'Not enough books in the library yet.'})
 
     favourite_keys = list(Favourite.objects.filter(user=request.user).values_list('book__key', flat=True))
     bookmark_keys = list(Bookmark.objects.filter(user=request.user).values_list('book__key', flat=True))
@@ -559,63 +548,97 @@ def get_recommendations(request):
         if book_list[i].key not in interacted_keys
     ]
     scored_books.sort(key=lambda x: x[0], reverse=True)
-    top_books = scored_books[:6]
 
     return JsonResponse({
         'recommendations': [
             {'title': b.title, 'author': b.author, 'key': b.key,
              'cover_id': b.cover_id, 'reason': 'Similar to your reading history'}
-            for score, b in top_books
+            for score, b in scored_books[:6]
         ]
     })
 
 
 @login_required
 def summarize_book(request, book_key):
+    """Generate a summary using NLTK — tries 3 sources in order"""
     book_key = '/' + book_key if not book_key.startswith('/') else book_key
     book = Book.objects.filter(key=book_key).first()
     if not book:
         return JsonResponse({'error': 'Book not found'}, status=404)
 
-    text_to_summarize = book.description
+    text_to_summarize = book.description or ''
 
-    if not text_to_summarize or len(text_to_summarize) < 100:
+    # ── Source 1: Use stored description if long enough ──
+    if len(text_to_summarize) >= 100:
+        pass  # use it directly
+
+    # ── Source 2: Fetch from OpenLibrary Works API ──
+    elif book.key:
+        try:
+            works_url = f'https://openlibrary.org{book.key}.json'
+            works_response = requests.get(works_url, timeout=10)
+            if works_response.status_code == 200 and works_response.text.strip():
+                works_data = works_response.json()
+                desc = works_data.get('description', '')
+                if isinstance(desc, dict):
+                    desc = desc.get('value', '')
+                if desc and len(desc) >= 100:
+                    text_to_summarize = desc[:5000]
+                    # Save it for future use
+                    book.description = desc[:2000]
+                    book.save()
+        except Exception:
+            pass
+
+    # ── Source 3: Fetch from Gutendex as last resort ──
+    if len(text_to_summarize) < 100:
         try:
             search_url = f'https://gutendex.com/books/?search={urllib.parse.quote(book.title)}'
-            response = requests.get(search_url, timeout=30)
-            data = response.json()
-            results = data.get('results', [])
-            if results:
-                formats = results[0].get('formats', {})
-                text_url = None
-                for key, url in formats.items():
-                    if 'text/plain' in key and 'utf-8' in key.lower():
-                        text_url = url
-                        break
-                if not text_url:
+            response = requests.get(search_url, timeout=20)
+            if response and response.status_code == 200 and response.text.strip():
+                data = response.json()
+                results = data.get('results', [])
+                if results:
+                    formats = results[0].get('formats', {})
+                    text_url = None
                     for key, url in formats.items():
-                        if 'text/plain' in key:
+                        if 'text/plain' in key and 'utf-8' in key.lower():
                             text_url = url
                             break
-                if text_url:
-                    text_response = requests.get(text_url, timeout=60)
-                    text_response.encoding = 'utf-8'
-                    full_text = text_response.text
-                    for marker in ['*** START OF THE PROJECT', '*** START OF THIS PROJECT']:
-                        idx = full_text.find(marker)
-                        if idx != -1:
-                            full_text = full_text[full_text.find('\n', idx) + 1:]
-                            break
-                    for marker in ['*** END OF THE PROJECT', '*** END OF THIS PROJECT']:
-                        idx = full_text.find(marker)
-                        if idx != -1:
-                            full_text = full_text[:idx]
-                            break
-                    text_to_summarize = full_text[:5000]
+                    if not text_url:
+                        for key, url in formats.items():
+                            if 'text/plain' in key:
+                                text_url = url
+                                break
+                    if text_url:
+                        headers = {'User-Agent': 'Illumia/1.0'}
+                        text_response = requests.get(text_url, timeout=20,
+                                                     headers=headers, stream=True)
+                        text_response.encoding = 'utf-8'
+                        full_text = ''
+                        size = 0
+                        for chunk in text_response.iter_content(chunk_size=8192,
+                                                                decode_unicode=True):
+                            full_text += chunk
+                            size += len(chunk)
+                            if size > 100000:
+                                break
+                        for marker in ['*** START OF THE PROJECT', '*** START OF THIS PROJECT']:
+                            idx = full_text.find(marker)
+                            if idx != -1:
+                                full_text = full_text[full_text.find('\n', idx) + 1:]
+                                break
+                        for marker in ['*** END OF THE PROJECT', '*** END OF THIS PROJECT']:
+                            idx = full_text.find(marker)
+                            if idx != -1:
+                                full_text = full_text[:idx]
+                                break
+                        if full_text.strip():
+                            text_to_summarize = full_text[:5000]
         except Exception as e:
             return JsonResponse({'error': f'Could not fetch book content: {str(e)}'}, status=500)
 
-    if not text_to_summarize:
+    if not text_to_summarize or len(text_to_summarize) < 50:
         return JsonResponse({'error': 'No content available to summarize for this book.'}, status=404)
 
     try:
@@ -633,12 +656,12 @@ def summarize_book(request, book_key):
         top_sentences = sorted(sentence_scores, key=sentence_scores.get, reverse=True)[:5]
         summary_sentences = [s for s in sentences if s in top_sentences]
         summary = ' '.join(summary_sentences)
-        summary = summary.replace('\r\n', ' ').replace('\r', ' ').replace('\n', ' ')
-        import re
-        summary = re.sub(r'\s+', ' ', summary).strip()
+        summary = re.sub(r'\s+', ' ', summary.replace('\r\n', ' ').replace('\n', ' ')).strip()
         return JsonResponse({
-            'title': book.title, 'author': book.author,
-            'summary': summary, 'sentence_count': len(summary_sentences),
+            'title': book.title,
+            'author': book.author,
+            'summary': summary,
+            'sentence_count': len(summary_sentences),
         })
     except Exception as e:
         return JsonResponse({'error': f'Could not generate summary: {str(e)}'}, status=500)
@@ -804,7 +827,7 @@ def view_material(request, material_id):
         student=request.user, material=material, status='approved'
     ).first()
     if not access:
-        messages.error(request, 'You do not have access to this material. Please request access first.')
+        messages.error(request, 'You do not have access to this material.')
         return redirect('course_materials')
     return render(request, 'registration/view_material.html', {
         'material': material,
@@ -822,7 +845,6 @@ def delete_material(request, material_id):
         return redirect('lecturer_dashboard')
     if request.method == 'POST':
         if material.file:
-            import os
             if os.path.exists(material.file.path):
                 os.remove(material.file.path)
         material.delete()
